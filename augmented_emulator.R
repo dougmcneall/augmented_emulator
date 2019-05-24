@@ -5,8 +5,8 @@
 # plausible values of input parameters for the land surface component
 # of the reduced-resolution climate model, FAMOUS.
 # This is the main analysis code for:
-# McNeall, DJ, Williams J, Betts, RA , Booth, BBB, Challenor, PG , Good, P
-# & Wiltshire A (2019) submitted to Geoscientific Model Development
+# McNeall, D.J., Williams J., Betts, R.A. , Booth, B.B.B., Challenor, P.G. , Good, P.
+# & Wiltshire A. (2019) submitted to Geoscientific Model Development
 # Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
 
 # ------------------------------------------------------------
