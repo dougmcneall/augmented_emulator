@@ -1094,19 +1094,19 @@ plot(X.climate[nroy.ix.climate.amaz, c(8,9)], type = 'n', xlab = 'Normalised Reg
      ylab = 'Normalised Regional Mean  Precipitation',
      main = 'Amazon')
 dfunc.up(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9])
-points(tp.amaz.norm, col = 'red', pch = 19)
+points(tp.amaz.norm, pch =21, col = 'black', bg = 'red', cex = 1.5)
 
 plot(X.climate[nroy.ix.climate.seasia, c(8,9)], type = 'n', xlab = 'Normalised Regional Mean Temperature',
      ylab = 'Normalised Regional Mean  Precipitation',
      main = 'South East Asia')
 dfunc.up(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9])
-points(tp.seasia.norm, col = 'red', pch = 19)
+points(tp.seasia.norm, pch =21, col = 'black', bg = 'red', cex = 1.5)
 
 plot(X.climate[nroy.ix.climate.congo, c(8,9)], type = 'n', xlab = 'Normalised Regional Mean Temperature',
      ylab = 'Normalised Regional Mean Precipitation',
      main = 'Central Africa')
 dfunc.up(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9])
-points(tp.congo.norm, col = 'red', pch = 19)
+points(tp.congo.norm, pch =21, col = 'black', bg = 'red', cex = 1.5)
 dev.off()
 
 
@@ -1248,27 +1248,22 @@ blockswap = function(dat, longs,lats, shift){
   out = mat.shift
 }
 
-reset = function() {
-  par(mfrow=c(1, 1), oma=rep(0, 4), mar=rep(0, 4), new=TRUE)
-  plot(0:1, 0:1, type="n", xlab="", ylab="", axes=FALSE)
-}
-
-#reset()
-#legend("top", legend=c("A", "B"), fill=c("red", "blue"), ncol=2, bty="n")
 
 famous.example = blockswap(remap.famous(bl.frac.ens[1,], longs = longs, lats = lats),
                            longs = longs, lats = lats, shift = 180)
 
+
+load('forest_fraction_obs_map.RData')
 # HadGEM2 family resolution
 #lats = 1.25 * 1.875
-bl.obs.dat = read.table('forest_fraction_obs_map_v2.txt', na.strings = '-1.073741824000000000e+09')
+#bl.obs.dat = read.table('forest_fraction_obs_map_v2.txt', na.strings = '-1.073741824000000000e+09')
 
 obslats = seq(from = -90, to = 90, length.out =  dim(bl.obs.dat)[2])
 obslongs = seq(from = 0, to = (360-1.875), by = 1.875)
 
 bl.obs.map = blockswap(t(as.matrix(bl.obs.dat)), longs = obslongs, lats = obslats, shift = 180)
 
-bl.dat.regrid = read.table('forest_fraction_obs_map_regrid_v2.txt', na.strings = '-1.073741824000000000e+09')
+#bl.dat.regrid = read.table('forest_fraction_obs_map_regrid_v2.txt', na.strings = '-1.073741824000000000e+09')
 bl.obs.map.regrid = blockswap(t(as.matrix(bl.dat.regrid)), longs = longs, lats = lats, shift = 180)
 
 pdf(width = 5, height = 8, file = 'graphics/map_comparison.pdf' )
