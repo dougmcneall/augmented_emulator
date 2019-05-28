@@ -145,13 +145,14 @@ X_tropics_norm = normalize(X_tropics)
 
 Y_tropics = c(famous_agg$AMAZ_MOD_FRAC, famous_agg$SEASIA_MOD_FRAC, famous_agg$CONGO_MOD_FRAC)
 
+# Standard emulator fit to all tropical forests
 tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 
 # ----------------------------------------------------------------------------------
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = TRUE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
@@ -593,12 +594,6 @@ colnames(X.taat.tp) = colnames(X_tropics_norm)
 # sample from the emulator
 y.taat.tp = predict(tropics_fit, newdata = X.taat.tp, type = 'UK')
 
-# tend to use cplot or cplotShort for multiple graphics
-pdf(width = 7, height = 7, file = 'graphics/taat_temp_precip.pdf')
-cplot(X.taat.tp[,8], X.taat.tp[,9], y.taat.tp$mean, 
-      cols = viridis(10), pch = 19, cex = 3)
-dev.off()
-
 # Can use quilt plot as long as the number of points in either direction matches the
 # data.
 ncol = 11
@@ -725,9 +720,6 @@ legend('topright', legend = c('model runs', 'bias corrected model runs'),
 dev.off()
 
 
-dotchart(c(obs_amazon, obs_congo, obs_seasia),
-         labels = c('Amazon', 'Africa', 'Asia'), xlim = c(0,1))
-
 pdf(file = 'graphics/dotchart_fractions.pdf', width = 6, height = 7)
 par(mar = c(5,6,2,8))
 plot(c(obs_amazon, obs_congo, obs_seasia), c(1,2,3), ylim=c(0.5,3.5), xlim=c(0,1), pch=19,
@@ -787,17 +779,6 @@ nobc.mae = mean(abs(c((standard.amazon$mean - obs_amazon), (standard.seasia$mean
 bc.mae = mean(abs(c((pred.amaz.bc$mean - obs_amazon), (pred.seasia.bc$mean - obs_seasia), (pred.congo.bc$mean - obs_congo))))
 
 bc.mae / nobc.mae
-
-
-plot(c(obs_amazon, obs_congo, obs_seasia),
-     c(standard.amazon$mean,standard.congo$mean, standard.seasia$mean),
-     xlim = c(0.3, 0.8), ylim = c(0.3, 0.8)
-)
-
-points(c(obs_amazon, obs_congo, obs_seasia),
-       c(pred.amaz.bc$mean, pred.congo.bc$mean, pred.seasia.bc$mean),
-       col = 'red')
-abline(0,1)
 
 # --------------------------------------------------------
 # Find points which are NROY for all three systems,
