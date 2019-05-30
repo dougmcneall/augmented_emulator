@@ -152,7 +152,7 @@ tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics = TRUE # The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
