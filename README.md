@@ -9,3 +9,9 @@ Submitted to Geoscientific Model Development
 Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
 
 Main R code for analysis is augmented_emulator.R
+
+DOI for current release
+[![DOI](https://zenodo.org/badge/188444266.svg)](https://zenodo.org/badge/latestdoi/188444266)
+
+
+
