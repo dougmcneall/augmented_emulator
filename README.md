@@ -8,6 +8,10 @@ McNeall, D.J., Williams J., Betts, R.A. , Booth, B.B.B., Challenor, P.G. , Good,
 Submitted to Geoscientific Model Development
 Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
 
+The code and data is available under the [Non-Commercial Government Licence](http://www.nationalarchives.gov.uk/doc/non-commercial-government-licence/version/2/).
+
+
+
 Main R code for analysis is augmented_emulator.R
 
 DOI for current release
