@@ -402,11 +402,11 @@ We find that when we bias correct all the spaces, the proportion of ``shared'' N
 
 When compared to the initial input parameter space covered by the ensemble, the shared NROY space of the non-bias-corrected forests represents 1.9\%, rising to 28\% on bias correction.
 
-We visualise two dimensional projections of the NROY input parameter space shared by all three forests before and after bias correction in figure \ref{fig:best_inputs_all_nobc} and \ref{fig:best_inputs_all_bc} . The two dimensional projections of high density regions of NROY points are dramatically shifted and expanded in the bias corrected input space, and the default parameters now lie in a high density region.
+We visualise two dimensional projections of the NROY input parameter space shared by all three forests before bias correction in figure \ref{fig:best_inputs_all_nobc} and after bias correction in \ref{fig:best_inputs_all_bc}. The two dimensional projections of high density regions of NROY points are dramatically shifted and expanded in the bias corrected input space, and the default parameters now lie in a high density region.
 
 \begin{figure}[t]
 \includegraphics[width=8.3cm]{../graphics/best_inputs_all_nobc.pdf}
-\caption{
+\caption{NROY land surface input space shared by all three forests before bias correction. Blue shading denotes the density of NROY input candidates, projected into the two dimensional space indicated by the labels. The default parameter settings are marked as red points.
 }
 \label{fig:best_inputs_all_nobc}
 \end{figure}
@@ -414,7 +414,7 @@ We visualise two dimensional projections of the NROY input parameter space share
 
 \begin{figure}[t]
 \includegraphics[width=8.3cm]{../graphics/best_inputs_all_bc.pdf}
-\caption{Transformation of the NROY land surface input space shared by all three forests. Blue shading denotes the density of NROY input candidates, projected into the two dimensional space indicated by the labels. The default parameter settings are marked as red points. The default parameters are in a low density region in the non-biased-corrected diagram (top), but in a high density region in the bias-corrected diagram (bottom).
+\caption{NROY land surface input space shared by all three forests when bias corrected using the augmented emulator. Blue shading denotes the density of NROY input candidates, projected into the two dimensional space indicated by the labels. The default parameter settings are marked as red points.
 }
 \label{fig:best_inputs_all_bc}
 \end{figure}
@@ -579,7 +579,7 @@ This work was supported by the Met Office Hadley Centre Climate Programme funded
 %% authors experienced with BibTeX only have to include the following two lines:
 %%
 \bibliographystyle{copernicus}
-\bibliography{famous.bib}
+\bibliography{augmented.bib}
 %%
 %% URLs and DOIs can be entered in your BibTeX file as:
 %%
