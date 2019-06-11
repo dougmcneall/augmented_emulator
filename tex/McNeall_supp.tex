@@ -28,15 +28,22 @@ where $\theta$ describes the \emph{characteristic length scales} - a measure of 
 
 Full details of the Universal kriging process used can be found in \citep{roustant2012dicekriging}, section 2.1, details of the kernel can be found in section 2.3, and examples of the trend and hyperparameter estimation  in section 3 the same publication. 
 
+\section{Forest regions}
+
+Forest fraction data is taken by calculating the mean broadleaf forest fraction in the areas shown in figure \ref{fig:map_forests}. Mean temperature and precipitation from the model are calculated for the corresponding regions and time period. The regions are: Amazon 15\textdegree S - 15\textdegree N, 270\textdegree E - 315\textdegree E; Central Africa; 15\textdegree S - 10\textdegree N, 7.5\textdegree E - 30\textdegree E; SE Asia 12\textdegree S - 10\textdegree N, 90\textdegree E - 150\textdegree E.
+
+\begin{figure}[t]
+\includegraphics[width=12cm]{../graphics/map_forests_augmented.pdf}
+\caption{A map of the forest regions used in the study. }
+\label{fig:map_forests}
+\end{figure}
+
+
 
 \bibliographystyle{copernicus}
 \bibliography{augmented.bib}
 
-\begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/map_forests_augmented.pdf}
-\caption{A map of the forest regions used in the study. Regions are: Amazon 15\textdegree S - 15\textdegree N, 270\textdegree E - 315\textdegree E; Central Africa; 15\textdegree S - 10\textdegree N, 7.5\textdegree E - 30\textdegree E; SE Asia 12\textdegree S - 10\textdegree N, 90\textdegree E - 150\textdegree E.}
-\label{fig:map_forests}
-\end{figure}
+
 
 
 
