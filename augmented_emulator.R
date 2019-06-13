@@ -21,7 +21,7 @@ library(parallel)
 library(viridisLite)
 
 load('famous_forest_fraction.RData')
-load('famous_agg.RData')
+load('famous_agg.Rdata')
 
 # Load specific versions of a github repository
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/emtools.R')
