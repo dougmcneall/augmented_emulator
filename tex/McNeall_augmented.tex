@@ -211,7 +211,7 @@ It appears that a wetter climate - which would be expected to stabilise forests 
 
 \begin{figure}[t]
 \includegraphics[width=12cm]{../graphics/fraction_vs_temp_precip_pcolcor.pdf}
-\caption{Smaller symbols represent broadleaf forest fraction in the FAMOUS ensemble against regional mean temperature and precipitation. Ensemble member forest fraction in the Amazon is represented by the colour of the circles, Central Africa by triangles and SE Asia by squares. Larger symbols represent observed climate and forest fraction.
+\caption{Regional temperature, precipitation and broadleaf forest fraction in the ensemble of FAMOUS compared with observations. Smaller symbols represent broadleaf forest fraction in the FAMOUS ensemble against regional mean temperature and precipitation. Ensemble member forest fraction in the Amazon is represented by the colour of the circles, Central Africa by triangles and SE Asia by squares. Larger symbols represent observed climate and forest fraction.
 }
 \label{fig:fraction_vs_temp_precip_pcolcor}
 \end{figure}
@@ -398,7 +398,7 @@ Another result of bias correction is that it increases the ``harmonisation'' of 
 \end{figure}
 
 
-We find that when we bias correct all the spaces, the proportion of ``shared'' NROY input space relative to the union of NROY spaces for all forests increases from 2.6\% to 31\% - an order of magnitude increase. This is driven chiefly by the harmonisation of the NROY space of the Amazon to the other two forests. We see that before bias correction, the South East Asian and African forests share nearly three quarters (74\%) of their combined NROY space. This drops to 33\% when bias corrected, but with the advantage that the Amazon and Central Africa now share over 90\% (91.5\%) of their combined NROY space. 
+We find that when we bias correct all the spaces, the proportion of ``shared'' NROY input space relative to the union of NROY spaces for all forests increases from 2.6\% to 31\% - an order of magnitude increase (see table \ref{tab:intersection}). This is driven chiefly by the harmonisation of the NROY space of the Amazon to the other two forests. We see that before bias correction, the South East Asian and African forests share nearly three quarters (74\%) of their combined NROY space. This drops to 33\% when bias corrected, but with the advantage that the Amazon and Central Africa now share over 90\% (91.5\%) of their combined NROY space (table \ref{tab:shared_space}). 
 
 When compared to the initial input parameter space covered by the ensemble, the shared NROY space of the non-bias-corrected forests represents 1.9\%, rising to 28\% on bias correction.
 
@@ -418,6 +418,24 @@ We visualise two dimensional projections of the NROY input parameter space share
 }
 \label{fig:best_inputs_all_bc}
 \end{figure}
+
+
+
+
+\begin{table*}[t]
+\caption{Measures of the NROY input space shared by all three forests. The intersection is NROY for all three forests, the Union is NROY for at least one forest. The initial space is that defined by the parameter limits of the initial experiment design.}
+\begin{tabular}{lrr}
+\tophline
+
+    & Intersection / Union (\%) & Intersection / Initial (\% ) \\
+\middlehline
+ Non bias-corrected & 2.6 &   1.9 \\
+Bias-corrected  & 31 & 28.3 \\
+\bottomhline
+\end{tabular}
+\belowtable{} % Table Footnotes
+\label{tab:intersection}
+\end{table*}
 
 
 \begin{table*}[t]
@@ -446,20 +464,6 @@ Central Africa         &    0.915 & 0.337  &   1 \\
 \end{table*}
 
 
-\begin{table*}[t]
-\caption{Measures of the NROY input space shared by all three forests. The intersection is NROY for all three forests, the Union is NROY for at least one forest. The initial space is that defined by the parameter limits of the initial experiment design.}
-\begin{tabular}{lrr}
-\tophline
-
-    & Intersection / Union (\%) & Intersection / Initial (\% ) \\
-\middlehline
- Non bias-corrected & 2.6 &   1.9 \\
-Bias-corrected  & 31 & 28.3 \\
-\bottomhline
-\end{tabular}
-\belowtable{} % Table Footnotes
-\label{tab:intersection}
-\end{table*}
 
 
 \subsection{Doing better than the default parameters}\label{ssec:better_than_default}
@@ -487,7 +491,7 @@ We use history matching to find the set of regional mean climates that are most 
 
 \section{Discussion}\label{sec:discussion}
 \subsection{Simulating the Amazon}\label{ssec:simulating}
-We have shown that the simulation of the broadleaf tropical forest in FAMOUS is almost as sensitive to temperature and precipitation as to any land surface parameter perturbation in the ensemble. However, the calculated sensitivities are dependent on the chosen limits of the parameter perturbations themselves. The precise order and size of sensitivities might change given updated parameter ranges, but there is little doubt that the climate variables are a strong influence on broadleaf forest fraction. This version of FAMOUS when run with the default land surface input parameter settings would successfully simulate the Amazon rainforest to within tolerable limits if regional climate biases were substantially reduced. As such, there is no need to invoke a missing process in the land surface in order to explain the forest fraction discrepancy in the Amazon. We have strengthened the case made by M16 that the low Amazon forest fraction is not a result of poorly chosen parameters.  There appears is a broad region of climate space where the effects of temperature and precipitation on forest fraction compensate for each other. This gives room for a number of possible sources of model discrepancy, and by extension makes it unlikely that the default input parameters are optimal. There are indications from the emulator that a small region of parameter space exists where there is even smaller overall error in the simulation, offering a target for exploration using further runs of the model.
+We have shown that the simulation of the broadleaf tropical forest in FAMOUS is almost as sensitive to temperature and precipitation as to any land surface parameter perturbation in the ensemble. However, the calculated sensitivities are dependent on the chosen limits of the parameter perturbations themselves. The precise order and size of sensitivities might change given updated parameter ranges, but there is little doubt that the climate variables are a strong influence on broadleaf forest fraction. This version of FAMOUS when run with the default land surface input parameter settings would successfully simulate the Amazon rainforest to within tolerable limits if regional climate biases were substantially reduced. As such, there is no need to invoke a missing process in the land surface in order to explain the forest fraction discrepancy in the Amazon. We have strengthened the case made by M16 that the low Amazon forest fraction is not a result of poorly chosen parameters.  There is a broad region of climate space where the effects of temperature and precipitation on forest fraction compensate for each other. This gives room for a number of possible sources of model discrepancy, and by extension makes it unlikely that the default input parameters are optimal. There are indications from the emulator that a small region of parameter space exists where there is even smaller overall error in the simulation, offering a target for exploration using further runs of the model.
  
 There is a feedback from the land surface to the atmosphere implicitly included in the emulated relationship. We cannot control this feedback directly with the emulator, and so work out the impact of this feedback on the forest fraction as it is present in the training data. This feedback would have to be taken into account if we were to simulate the correct climate independently of the land surface.
 
