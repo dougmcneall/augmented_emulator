@@ -6,11 +6,12 @@
 # of the reduced-resolution climate model, FAMOUS.
 # This is the main analysis code for:
 # McNeall, D.J., Williams J., Betts, R.A. , Booth, B.B.B., Challenor, P.G. , Good, P.
-# & Wiltshire A. (2019) submitted to Geoscientific Model Development
+# & Wiltshire A. (2019) Correcting a bias in a climate model with an augmented emulator,
+# submitted as a discussion paper to Geoscientific Model Development
 # Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
 
 # ------------------------------------------------------------
-# 0. Load packages
+# Load packages and data
 # ------------------------------------------------------------
 library(DiceKriging)
 library(RColorBrewer)
@@ -26,10 +27,6 @@ load('famous_agg.RData')
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/emtools.R')
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/imptools.R')
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/vistools.R')
-
-#source('https://raw.githubusercontent.com/dougmcneall/packages-git/master/emtools.R')
-#source('https://raw.githubusercontent.com/dougmcneall/packages-git/master/imptools.R')
-#source('https://raw.githubusercontent.com/dougmcneall/packages-git/master/vistools.R')
 
 # pallettes
 rb <- brewer.pal(11, "RdBu")
@@ -64,17 +61,23 @@ pch.congo <- 2
 pch.seasia <- 5
 pch.namerica <- 4
 
+# --------------------------------------------------------------
+# Helper functions
+# --------------------------------------------------------------
+
 dfunc.up <- function(x,y,...){
+  # function for plotting 2d kernel density estimates in pairs() plot.
   require(MASS)
   require(RColorBrewer)
   
   br <- brewer.pal(9, 'Blues')
-  # function for plotting 2d kernel density estimates in pairs() plot.
   kde <- kde2d(x,y)
   image(kde, col = br, add = TRUE)
 }
 
 dfunc.up.truth = function(x,y, ...){
+  # function for plotting 2d kernel density estimates in pairs() plot,
+  # adding a data point overlay.
   require(MASS)
   require(RColorBrewer)
   
@@ -85,7 +88,7 @@ dfunc.up.truth = function(x,y, ...){
   ydash <- head(y, -1)
   
   br <- brewer.pal(9, 'Blues')
-  # function for plotting 2d kernel density estimates in pairs() plot.
+  
   kde <- kde2d(xdash,ydash)
   image(kde, col = br, add = TRUE)
   points(xtrue, ytrue, pch =21, col = 'black', bg = 'red', cex = 1.5)
@@ -105,8 +108,6 @@ shadowtext <- function(x, y=NULL, labels,
   text(xy$x, xy$y, labels, col=col, ... )
 }
 
-# Plot colour as the third dimension, to compare model runs with
-# mean emulated surface.
 col3rd = function(n, pal, z){
   # produce a set of colours that match the values of z
   # Use for colour in 3rd dimension on a scatterplot.
@@ -119,6 +120,7 @@ col3rd = function(n, pal, z){
 }
 
 reset <- function() {
+  # for putting labels outside the margins
   par(mfrow=c(1, 1), oma=rep(0, 4), mar=rep(0, 4), new=TRUE)
   plot(0:1, 0:1, type="n", xlab="", ylab="", axes=FALSE)
 }
@@ -129,9 +131,8 @@ X.norm = normalize(X)
 X.stan.norm <- normalize(matrix(X.standard, nrow = 1), wrt = X)
 colnames(X.stan.norm) = colnames(X)
 
-# Matrix of (repeated) input parameters, modelled temperatures,
-# precipitation and dorest fractions.
-
+# Build input matrix of (repeated) input parameters, modelled temperatures,
+# precipitation and forest fractions.
 X_AMAZON = famous_agg[ ,c(2,3,4,5,6,7,8,15,19)] # AMAZON
 X_SEASIA = famous_agg[, c(2,3,4,5,6,7,8, 17,21)] # SEASIA
 X_CONGO = famous_agg[, c(2,3,4,5,6,7,8,16,20)] # CONGO
@@ -143,6 +144,7 @@ colnames(X_CONGO) = c(colnames(famous_agg)[2:8], 'MOD_TEMP', 'MOD_PRECIP')
 X_tropics = rbind(X_AMAZON, X_SEASIA, X_CONGO)
 X_tropics_norm = normalize(X_tropics)
 
+# Output vector of broadleaf forest fraction
 Y_tropics = c(famous_agg$AMAZ_MOD_FRAC, famous_agg$SEASIA_MOD_FRAC, famous_agg$CONGO_MOD_FRAC)
 
 # Standard emulator fit to all tropical forests
@@ -152,7 +154,7 @@ tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = TRUE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
@@ -328,16 +330,9 @@ fit.amazon <- km(~., design=X.norm, response=famous_agg$AMAZ_MOD_FRAC)
 fit.congo <- km(~., design=X.norm, response=famous_agg$CONGO_MOD_FRAC)
 fit.seasia <- km(~., design=X.norm, response=famous_agg$SEASIA_MOD_FRAC)
 
-
-#fit.namerica <- km(~., design=X.norm, response=NAMERICA_MOD_FRAC)
-#fit.global <- km(~., design=X.norm, response=GLOB_MOD_FRAC)
-
 standard.amazon <- predict(fit.amazon, newdata=X.stan.norm, type='UK')
 standard.congo <- predict(fit.congo, newdata=X.stan.norm, type='UK')
 standard.seasia <- predict(fit.seasia, newdata=X.stan.norm, type='UK')
-
-#standard.namerica <- predict(fit.namerica, newdata=X.stan.norm, type='UK')
-#standard.global <- predict(fit.global, newdata=X.stan.norm, type='UK')
 
 obs_amazon = obs[,'AMAZON']
 obs_congo = obs[,'CONGO']
@@ -506,45 +501,6 @@ text(tp.amaz.norm, 'Amazon', pos = 4, font = 2)
 text(tp.congo.norm, 'Central Africa', pos = 4, font = 2)
 text(tp.seasia.norm, 'SE Asia', pos = 4, font = 2)
 dev.off()
-
-#plot(X_tropics[, 8], X_tropics[, 9], col = 'black', bg = zcolor, pch = 21, cex = 2)
-
-# ----------------------------------------------------------------------
-# This plot Deprecated in favour of a quilt plot (below) for the paper 
-# ----------------------------------------------------------------------
-
-# Normalize the colours to the background
-# the first 300 points are Y_tropics
-# ncols = 7
-# allz = c(Y_tropics,obs_amazon,obs_seasia, obs_congo, plausible.amazon.bc$pred$mean)
-# zcolor = col3rd(n=ncols, pal=viridis(ncols), z = allz) 
-# 
-# pdf(file = 'graphics/emulated_fraction_vs_temp_precip_pcolcor.pdf',width = 7, height = 7)
-# par(las = 1)
-# quilt.plot(plausible.amazon.bc$X.unif[,8],
-#            plausible.amazon.bc$X.unif[, 9], plausible.amazon.bc$pred$mean,
-#            col = viridis(ncols),
-#            xlab = 'Normalised regional temperature', 
-#            ylab = 'Normalised regional precipitation', 
-#            legend.args = list(text = "forest\nfraction",
-#                               col="black", cex=1.2, side=3, line=1))
-# cex = 1.4
-# lwd = 1.5
-# points(X_tropics_norm[1:100,8], X_tropics_norm[1:100,9], 
-#        col = 'black', bg = zcolor[1:100], pch = 21, cex = cex, lwd = lwd)
-# points(X_tropics_norm[101:200,8], X_tropics_norm[101:200,9], 
-#        col = 'black', bg = zcolor[101:200], pch = 22, cex = cex, lwd = lwd)
-# points(X_tropics_norm[201:300,8], X_tropics_norm[201:300,9], 
-#        col = 'black', bg = zcolor[201:300], pch = 24, cex = cex, lwd = lwd)
-# 
-# points(tp.amaz.norm, col = 'black', pch = 21, cex = 2.5, bg = zcolor[301], lwd = 2)
-# points(tp.seasia.norm, col = 'black', pch = 22, cex = 2.5, bg = zcolor[302], lwd = 2)
-# points(tp.congo.norm, col = 'black', pch = 24, cex = 2.5, bg = zcolor[303], lwd = 2)
-# 
-# shadowtext(tp.amaz.norm[1],tp.amaz.norm[2], 'Amazon', pos = 4, font = 2,r =0.2)
-# shadowtext(tp.seasia.norm[1], tp.seasia.norm[2], 'SE Asia', pos = 4, font = 2, r = 0.2)
-# shadowtext(tp.congo.norm[1], tp.congo.norm[2], 'Central Africa', pos = 4, font = 2, r = 0.2)
-# dev.off()
 
 # No emulated surface in this version
 pdf(file = 'graphics/fraction_vs_temp_precip_pcolcor.pdf',width = 8, height = 7)
@@ -784,8 +740,8 @@ bc.mae / nobc.mae
 # Find points which are NROY for all three systems,
 # When T and P are held at observed values and not 
 # --------------------------------------------------------
-# Find the set of plausible inputs, when temperature and precip are included in the inputs
 
+# Find the set of plausible inputs, when temperature and precip are included in the inputs
 # create a 'core' X
 n = 100000
 X.mins = apply(X.norm,2,min)
@@ -912,7 +868,6 @@ congo.impl.bc.default = impl(em = pred.congo.bc$mean, em.sd = pred.congo.bc$sd,
 # What part of parameter space matches everything?
 # (We use a very low uncertainty)
 # ----------------------------------------------------------------
-
 
 nroy.bc.ix = intersect(intersect(nroy.ix.amaz.bc,nroy.ix.seasia.bc ), nroy.ix.congo.bc)
 nroy.nobc.ix = intersect(intersect(nroy.ix.amaz,nroy.ix.seasia ), nroy.ix.congo)
@@ -1055,7 +1010,6 @@ dev.off()
 
 # set at default parameters and vary T and P together
 # keep points with I < 3
-
 # sample temperature and precip
 
 n = 100000
@@ -1114,6 +1068,7 @@ dev.off()
 # Analysis suggested by Michael Goldstein - 
 # What value does the model add over just using T and P to
 # fit the data?
+# (not in paper)
 # -------------------------------------------------------------
 
 if(run_diagnostics){

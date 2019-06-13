@@ -1,6 +1,13 @@
 # map_forests.R
 # Map the forest regions used in the augmented emulator paper.
-# 
+# This is the code for supplementary material plots for:
+# McNeall, D.J., Williams J., Betts, R.A. , Booth, B.B.B., Challenor, P.G. , Good, P.
+# & Wiltshire A. (2019) Correcting a bias in a climate model with an augmented emulator,
+# submitted as a discussion paper to Geoscientific Model Development
+# Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
+# McNeall, D.J., Williams J., Betts, R.A. , Booth, B.B.B., Challenor, P.G. , Good, P.
+# & Wiltshire A. (2019) submitted to Geoscientific Model Development
+# Contact Doug McNeall dougmcneall@gmail.com @dougmcneall
 
 pdf(height=4, width=8,file='graphics/map_forests_augmented.pdf')
 #dev.new(height = 4, width = 8)
