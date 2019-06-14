@@ -2,7 +2,6 @@
 
 \title{Correcting a bias in a climate model with an augmented emulator}
 
-
 % \Author[affil]{given_name}{surname}
 
 \Author[1]{Doug}{McNeall}
@@ -13,55 +12,20 @@
 \Author[1]{Peter}{Good}
 \Author[1]{Andy}{Wiltshire}
 
-
 \affil[1]{Met Office Hadley Centre, FitzRoy Road, Exeter, EX1 3PB, UK}
 \affil[2]{NIWA, 301 Evans Bay Parade, Hataitai, Wellington 6021, New Zealand}
 \affil[3]{University of Exeter, North Park Road, Exeter, EX4 4QE, UK}
 %% The [] brackets identify the author with the corresponding affiliation. 1, 2, 3, etc. should be inserted.
-
-
 
 \runningtitle{Correcting a bias in a climate model}
 
 \runningauthor{Doug McNeall}
 
 \correspondence{Doug McNeall (doug.mcneall@metoffice.gov.uk)}
-
-\begin{document}
-
-\title{Correcting a bias in a climate model with an augmented emulator}
-
-
-% \Author[affil]{given_name}{surname}
-
-\Author[1]{Doug}{McNeall}
-\Author[2]{Jonny}{Williams}
-\Author[1,3]{Richard}{Betts}
-\Author[1]{Ben}{Booth}
-\Author[3]{Peter}{Challenor}
-\Author[1]{Peter}{Good}
-\Author[1]{Andy}{Wiltshire}
-
-
-\affil[1]{Met Office Hadley Centre, FitzRoy Road, Exeter, EX1 3PB, UK}
-\affil[2]{NIWA, 301 Evans Bay Parade, Hataitai, Wellington 6021, New Zealand}
-\affil[3]{University of Exeter, North Park Road, Exeter, EX4 4QE, UK}
-%% The [] brackets identify the author with the corresponding affiliation. 1, 2, 3, etc. should be inserted.
-
-
-
-\runningtitle{Correcting a bias in a climate model}
-
-\runningauthor{Doug McNeall}
-
-\correspondence{Doug McNeall (doug.mcneall@metoffice.gov.uk)}
-
 
 \firstpage{1}
 
 \maketitle
-
-
 
 \begin{abstract}
 A key challenge in developing flagship climate model configurations is the process of setting uncertain input parameters at values that lead to credible climate simulations. Setting these parameters traditionally relies heavily on insights from those involved in parameterisation of the underlying climate processes. Given the many degrees of freedom and computational expense involved in evaluating such a selection, this can be imperfect leaving open questions about whether any subsequent simulated biases result from mis-set parameters or wider structural model errors (such as missing or partially parameterised processes).  Here we present a complementary approach to identifying plausible climate model parameters, with a method of bias correcting subcomponents of a climate model using a Gaussian process emulator that allows credible values of model input parameters to be found even in the presence of a significant model bias.
@@ -73,11 +37,8 @@ In this study we bias correct the climate of the Amazon in a climate model using
 The augmented emulator allows bias correction of an ensemble of climate model runs and reduces the risk of choosing poor parameter values because of an error in a subcomponent of the model. We discuss the potential of the augmented emulator to act as a translational layer between model subcomponents, simplifying the process of model tuning when there are compensating errors, and helping model developers discover and prioritise model errors to target. 
 
 \end{abstract}
-\bibliographystyle{copernicus}
-\bibliography{famous.bib}
 
 \bibliographystyle{copernicus}
 \bibliography{augmented.bib}
-
 
 \end{document}
