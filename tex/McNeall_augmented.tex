@@ -201,7 +201,7 @@ For temperature observations we use the CRU global monthly surface temperature c
 
 \begin{figure}[t]
 \includegraphics[width=12cm]{../graphics/map_comparison.pdf}
-\caption{Observations of broadleaf forest fraction on their native grid (top), and regridded to the FAMOUS grid (bottom)}
+\caption{Observations of broadleaf forest fraction on their native grid (top), and regridded to the FAMOUS grid (bottom).}
 \label{fig:map_comparison}
 \end{figure}
 
@@ -359,7 +359,7 @@ Assuming a ``best'' set of inputs $x^*$where the the model discrepancy $\delta$,
 z = g(x^*) + \delta + \epsilon 
 \end{equation}
 
-We calculate measure of Implausibility I, and reject any input as implausible where I >3 after Pukelsheim's three-sigma rule; that is, for any unimodal distribution, 95 \% of the probability mass will be contained within 3 standard deviations of the mean (Pukelsheim, 1994). We calculate
+We calculate measure of implausibility $I$, and reject any input as implausible where $I >3$ after Pukelsheim's three-sigma rule; that is, for any unimodal distribution, 95 \% of the probability mass will be contained within 3 standard deviations of the mean (Pukelsheim, 1994). We calculate
 
 \begin{equation}
 I^{2} = {\lvert  z - E[g(x)]\rvert}^{2} /  Var[g(x)] + Var[\delta] +  Var[\epsilon]
@@ -369,7 +369,7 @@ which recognises that the distance between the best estimate of the emulator and
 
 We study the region of input space that is ``Not Ruled Out Yet'' (NROY) by comparison of the model output to the observations of forest fraction. In the previous section we see that the overall difference between the simulated and observed forest fraction is reduced if the output is bias corrected. In this section, we study how that bias correction affects the NROY space.
 
-In M16, the default input parameters were ruled out as implausible for the Amazon region forest fraction. For the sake of illustration, we assume very low uncertainties: zero observational uncertainty and a model discrepancy term with a zero mean and an uncertainty ($\pm$ 1 sd) of just 0.01. We note that under these conditions the default parameters would be ruled out in the standard emulator.  However, if we bias correct the model output using the observed temperature and precipitation, we find that the implausibility measure I for the forest fraction in the Amazon at the standard input parameters reduces from nearly 7 to 1.3 - comfortably under the often-used threshold of 3 for rejection of an input. The implausibility of the SE Asian and Central African forest fraction at the default parameter settings rises with bias correction (see table \ref{tab:default_implausibility}), but neither comparison comes close to ruling out the default parameters. We can confidently say that bias correction using the emulator means that observations no longer rule out the default parameters, even with the assumption of a very small model discrepancy.
+In M16, the default input parameters were ruled out as implausible for the Amazon region forest fraction. For the sake of illustration, we assume very low uncertainties: zero observational uncertainty and a model discrepancy term with a zero mean and an uncertainty ($\pm$ 1 sd) of just 0.01. We note that under these conditions the default parameters would be ruled out in the standard emulator.  However, if we bias correct the model output using the observed temperature and precipitation, we find that the implausibility measure $I$ for the forest fraction in the Amazon at the standard input parameters reduces from nearly 7 to 1.3 - comfortably under the often-used threshold of 3 for rejection of an input. The implausibility of the SE Asian and Central African forest fraction at the default parameter settings rises with bias correction (see table \ref{tab:default_implausibility}), but neither comparison comes close to ruling out the default parameters. We can confidently say that bias correction using the emulator means that observations no longer rule out the default parameters, even with the assumption of a very small model discrepancy.
 
 
 \begin{table*}[t]
@@ -531,7 +531,7 @@ We offer a technique of using an emulator augmented with input variables that ar
 
 %% The following commands are for the statements about the availability of data sets and/or software code corresponding to the manuscript.
 %% It is strongly recommended to make use of these sections in case data sets and/or software code have been part of your research the article is based on.
-\codedataavailability{Code and data are available at \url{https://doi.org/10.5281/zenodo.3236322}} %% use this section when having data sets and software code available
+\codedataavailability{Code and data are available at \url{https://doi.org/10.5281/zenodo.3246103}} %% use this section when having data sets and software code available
 
 %\appendix
 %\section{}    %% Appendix A
