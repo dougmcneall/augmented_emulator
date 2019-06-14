@@ -21,7 +21,7 @@ library(parallel)
 library(viridisLite)
 
 load('famous_forest_fraction.RData')
-load('famous_agg.RData')
+load('famous_agg.Rdata')
 
 # Load specific versions of a github repository
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/emtools.R')
@@ -154,7 +154,7 @@ tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics = TRUE # The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
