@@ -1,5 +1,32 @@
 \documentclass[gmdd, manuscript]{copernicus} % uncomment to see what the 2 column final paper will look like.
 
+\title{Correcting a bias in a climate model with an augmented emulator}
+
+
+% \Author[affil]{given_name}{surname}
+
+\Author[1]{Doug}{McNeall}
+\Author[2]{Jonny}{Williams}
+\Author[1,3]{Richard}{Betts}
+\Author[1]{Ben}{Booth}
+\Author[3]{Peter}{Challenor}
+\Author[1]{Peter}{Good}
+\Author[1]{Andy}{Wiltshire}
+
+
+\affil[1]{Met Office Hadley Centre, FitzRoy Road, Exeter, EX1 3PB, UK}
+\affil[2]{NIWA, 301 Evans Bay Parade, Hataitai, Wellington 6021, New Zealand}
+\affil[3]{University of Exeter, North Park Road, Exeter, EX4 4QE, UK}
+%% The [] brackets identify the author with the corresponding affiliation. 1, 2, 3, etc. should be inserted.
+
+
+
+\runningtitle{Correcting a bias in a climate model}
+
+\runningauthor{Doug McNeall}
+
+\correspondence{Doug McNeall (doug.mcneall@metoffice.gov.uk)}
+
 \begin{document}
 
 \begin{abstract}
@@ -12,6 +39,8 @@ In this study we bias correct the climate of the Amazon in a climate model using
 Using the augmented emulator allows the bias correction a pre-existing coupled ensemble of climate model runs and reduces the risk of choosing poor parameter values because of an error in a subcomponent of the model. We discuss the potential of the augmented emulator to act as a translational layer between model subcomponents, simplifying the process of model tuning when there are potential compensating errors, and helping model developers prioritise model errors to target. Our technique has the potential to help choose good input parameters for a model, and to efficiently project the impacts of a changing climate, even when there are significant biases in a subcomponent of the model.
 
 \end{abstract}
+\bibliographystyle{copernicus}
+\bibliography{famous.bib}
 
 
 \end{document}
