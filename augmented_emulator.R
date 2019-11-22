@@ -236,6 +236,8 @@ if(run_diagnostics){
          col = 'black',
          bty = 'n')
   dev.off()
+
+  
   
   # Rank histograms for checking the uncertainty?
   # The principle behind the rank histogram is quite simple. 
@@ -1281,4 +1283,146 @@ dev.off()
 
 
 
+# --------------------------------------------------------------------------------------
+# Validation section for response to reviewers
+# --------------------------------------------------------------------------------------
 
+# Find the ensemble members nearest the observed temperature and precipitation
+# for the three forests, and those at the edges of the temperature and precipitation
+# data set. Hold out those members and check how well the GP does in prediction.
+
+# Choose ensemble members near to the edges of the
+# temperature and precip parameter space
+
+holdout1.ix <- which(X_tropics_norm[,'MOD_TEMP'] < 0.4 & X_tropics_norm[,'MOD_PRECIP'] < 0.2)
+
+X.test.holdout1 = X_tropics_norm[holdout1.ix, ]
+X.train.holdout1 = X_tropics_norm[-holdout1.ix, ]
+
+y.test.holdout1 <- Y_tropics[holdout1.ix]
+y.train.holdout1 <- Y_tropics[-holdout1.ix]
+
+
+pch.tropics = c(rep(pch.amaz, 100), rep(pch.seasia, 100), rep(pch.congo, 100))
+
+#dev.new()
+pdf(file = 'graphics/holdout1_location.pdf')
+
+plot(X.test.holdout1[,'MOD_TEMP'], X.test.holdout1[,'MOD_PRECIP'], xlim = c(0,1),
+     ylim = c(0,1), pch = pch.tropics[holdout1.ix], col = 'red',
+     xlab = 'normalised temperature', ylab = 'normalised preipitation')
+points(X.train.holdout1[,'MOD_TEMP'],X.train.holdout1[,'MOD_PRECIP'] , pch =  pch.tropics[-holdout1.ix], col = 'black')
+points(tp.amaz.norm, col = 'black', pch = pch.amaz, cex = 2, bg = col.amaz, lwd = 2.5)
+points(tp.congo.norm, col = 'black', pch = pch.congo, cex = 2, bg = col.congo, lwd = 2.5)
+points(tp.seasia.norm, col = 'black', pch = pch.seasia, cex = 2, bg = col.seasia, lwd = 2.5)
+
+text(tp.amaz.norm, 'Amazon', pos = 4, font = 2)
+text(tp.congo.norm, 'Central Africa', pos = 4, font = 2)
+text(tp.seasia.norm, 'SE Asia', pos = 4, font = 2)
+dev.off()
+
+
+
+fit.holdout1 = km(~., design = X.train.holdout1, response = y.train.holdout1)
+pred.holdout1 = predict(fit.holdout1, newdata = X.test.holdout1, type = 'UK')
+
+plot(1:6, y.test.holdout1, ylim = c(0,1), pch = 19)
+points(1:6, pred.holdout1$mean, ylim = c(0,1), col = 'darkgrey')
+segments(x0 = 1:6, y0 = pred.holdout1$mean - (2*pred.holdout1$sd),
+         x1 = 1:6, y1 = pred.holdout1$mean + (2*pred.holdout1$sd),
+         col = 'darkgrey'
+         )
+
+
+# Sort predictions by forest fraction magnitude for plotting
+frac.sort = sort(Y_tropics, index.return = TRUE)
+
+pdf(file = 'graphics/holdout1_vs_loo.pdf', width = 16, height = 4)
+# Choose ensemble members near to the edges of the
+# temperature and precip parameter space
+  
+plot(1:300, Y_tropics[frac.sort$ix], pch = 20, xlim = c(-1, 310),ylim = c(-0.1,1), xaxs = 'i',
+     xlab = 'ensemble member rank',
+     ylab = 'forest fraction')
+points(1:300, true.loo.all$mean[frac.sort$ix], pch = 20, col = 'darkgrey')
+
+y0 = (true.loo.all$mean - (2*true.loo.all$sd))[frac.sort$ix]
+y1 = (true.loo.all$mean + (2*true.loo.all$sd))[frac.sort$ix]
+
+segments(x0 = 1:300, y0 = y0,
+         x1 = 1:300,y1 = y1,
+         col = 'darkgrey'
+         )
+
+points(302:307, y.test.holdout1, pch = 20, col = 'red')
+points(302:307, pred.holdout1$mean, ylim = c(0,1),pch = 20, col = 'darkgrey')
+
+segments(x0 = 302:307, y0 = pred.holdout1$mean - (2*pred.holdout1$sd),
+         x1 = 302:307, y1 = pred.holdout1$mean + (2*pred.holdout1$sd),
+         col = 'darkgrey'
+         )
+abline(v = 301, lty = 'dashed')
+
+legend('topleft', pch = 20, col = c('black', 'red', 'darkgrey'),
+       legend = c('Ensemble member', 'hold-out sample', 'prediction'), bty = 'n', cex = 0.8)
+
+dev.off()
+
+
+# Histogram of leave-one-out and holdout errors
+pdf(file = 'graphics/holdout1_error_hist.pdf', width = 6, height = 5)
+hist(true.loo.all$mean - Y_tropics, col = 'darkgrey',
+     xlab = 'prediction error',
+     main = '')
+
+legend('topleft', pch = c('|',NA), col = c('red', NA),
+       legend = c('hold-out sample','leave-one-out') , cex = 0.8, fill  =c(NA, 'darkgrey'),
+       border = c(NA, 'black'))
+
+rug(pred.holdout1$mean - y.test.holdout1, col = 'red', lwd = 2)
+dev.off()
+
+
+# Compare leave-one-out error against hold-out error for the 6 members.
+
+
+dev.new(width= 7, height = 4)
+#pdf(file = 'graphics/loo_v_holdout1_abserror.pdf')
+par( las = 1)
+plot(1:6, Y_tropics[holdout1.ix], ylim = c(0,1), pch = 19, xlim = c(1, 6.2),
+     ylab = 'forest fraction',
+     xlab = 'held-out ensemble member')
+
+abline(h = range(Y_tropics), col = 'darkgrey', lty = 'dashed') 
+
+points(1.1:6.1, true.loo.all$mean[holdout1.ix], pch = 19, col = 'blue')
+
+segments(x0 = 1.1:6.1, y0 =  (true.loo.all$mean[holdout1.ix] - 2*true.loo.all$sd[holdout1.ix]),
+         x1 = 1.1:6.1, y1 = (true.loo.all$mean[holdout1.ix] + 2*true.loo.all$sd[holdout1.ix]),
+         col = 'blue'
+         )
+
+
+points(1.2:6.2, pred.holdout1$mean, col = 'red', pch = 19)
+segments(x0 = 1.2:6.2, y0 =  (pred.holdout1$mean - 2*pred.holdout1$sd),
+         x1 = 1.2:6.2, y1 = (pred.holdout1$mean + 2*pred.holdout1$sd),
+         col = 'red'
+         )
+legend('bottomright',
+       col = c('black', 'blue', 'red'),
+       pch = 19,
+       legend = c('Ensemble member','LOO prediction', 'holdout prediction'),
+       bty = 'n',
+       cex = 0.8, pt.cex = 1,
+       inset = 0.08
+       )
+text(1,0.1, labels = 'Dashed lines are ensemble limits', col = 'darkgrey', cex = 0.8,
+     pos = 4)
+                                        #graphics.off()
+
+
+loo.err.holdout1 = (true.loo.all$mean - Y_tropics)[holdout1.ix]
+err.holdout1 = pred.holdout1$mean - y.test.holdout1
+dev.new()
+plot(1:6, abs(loo.err.holdout1), pch = 19, col = 'blue', ylim = c(0,0.06))
+points(1:6, abs(err.holdout1), pch = 19, col = 'red')
