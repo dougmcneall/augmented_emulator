@@ -442,6 +442,49 @@ barplot(bp.convert(fast.tell), col = c('skyblue', 'grey'), ylab = 'relative sens
 legend('topleft',legend = c('Main effect', 'Interactions'), fill = c('skyblue', 'grey') )
 dev.off()
 
+
+# Reviewer 1 asks how the Fast algorithm might be impacted because some of the
+# FAST99 design points are in a zone with few design points (eg, the cool, wet
+# corner of T/P space.
+
+# First, what is the implausibility of the FAST99 X?
+
+fast.impl.amaz = impl(em = pred.fast$mean, em.sd = pred.fast$sd,
+                  disc = 0, obs = obs_amazon, disc.sd = 0.01, obs.sd = 0)
+
+
+fast.impl.seasia= impl(em = pred.fast$mean, em.sd = pred.fast$sd,
+                  disc = 0, obs = obs_seasia, disc.sd = 0.01, obs.sd = 0)
+
+
+fast.impl.congo = impl(em = pred.fast$mean, em.sd = pred.fast$sd,
+                  disc = 0, obs = obs_congo, disc.sd = 0.01, obs.sd = 0)
+
+dev.new()
+par(mfrow = c(3,1))
+xlim = c(0,12)
+hist(fast.impl.amaz, xlim = xlim)
+hist(fast.impl.seasia, xlim = xlim)
+hist(fast.impl.congo, xlim = xlim)
+
+dev.new()
+plot(X.fast$X[,'MOD_TEMP'], X.fast$X[,'MOD_PRECIP'])
+
+# Calculating the 'Shapley measures', which allows for non-independence
+# of the inputs
+
+# This doesn't give great results
+#shapMC = shapleySubsetMc(X=X_tropics,Y=Y_tropics,
+#  Ntot=NULL, Ni=3, cat=NULL, weight=NULL, discrete=NULL)
+
+#fast.firstorder = print(fast.tell)[,1]
+#fast.total = print(fast.tell)[,2]
+
+#dev.new()
+#plot(fast.firstorder, shapMC$shapley)
+
+
+
 # ------------------------------------------------------
 # Find the set of plausible inputs, when 
 # temperature and precip are included in the inputs
@@ -1386,8 +1429,8 @@ dev.off()
 # Compare leave-one-out error against hold-out error for the 6 members.
 
 
-dev.new(width= 7, height = 4)
-#pdf(file = 'graphics/loo_v_holdout1_abserror.pdf')
+#dev.new(width= 7, height = 4)
+pdf(file = 'graphics/loo_v_holdout1_prediction_error.pdf', width = 7, height = 4)
 par( las = 1)
 plot(1:6, Y_tropics[holdout1.ix], ylim = c(0,1), pch = 19, xlim = c(1, 6.2),
      ylab = 'forest fraction',
@@ -1418,7 +1461,7 @@ legend('bottomright',
        )
 text(1,0.1, labels = 'Dashed lines are ensemble limits', col = 'darkgrey', cex = 0.8,
      pos = 4)
-                                        #graphics.off()
+graphics.off()
 
 
 loo.err.holdout1 = (true.loo.all$mean - Y_tropics)[holdout1.ix]
@@ -1426,3 +1469,333 @@ err.holdout1 = pred.holdout1$mean - y.test.holdout1
 dev.new()
 plot(1:6, abs(loo.err.holdout1), pch = 19, col = 'blue', ylim = c(0,0.06))
 points(1:6, abs(err.holdout1), pch = 19, col = 'red')
+
+
+# -------------------------------------------------------------------------
+# Reviewer 1 is concerned about the impact of a lack of samples in  
+# parts of temperature and precipitation space, and how that might impact
+# on sensitivity analysis and history matching conclusions
+# -------------------------------------------------------------------------
+
+
+# Code from here is just copied from elsewhere at the moment, needs adjusting
+# to apply to these data.
+
+constrained.oaat = function(X, Y, n.oaat = 21, mins, maxes, hold = NULL,
+                            predtype = 'UK',
+                            nugget=NULL, nuggetEstim=FALSE, noiseVar=NULL,
+                            seed=NULL, trace=FALSE, maxit=100,
+                            REPORT=10, factr=1e7, pgtol=0.0, parinit=NULL, 
+                            popsize=100)
+  {
+  # X        ...   Experiment design
+  # Y        ...   Matrix of model output, with variables in columns
+  # maxes    ...   Vector maximum tolerable value of variables corresponding
+  #                to columns of Y
+  # mins     ...   Vector minimum tolerable value of variables corresponding
+  #                to columns of Y
+  
+  # generate oaat design
+  d = ncol(X)
+  X.norm = normalize(X)
+  X.oaat = oaat.design(X.norm, n = n.oaat, med = TRUE, hold = hold)
+  colnames(X.oaat) = colnames(X)
+  
+  # generate ncol(Y) emulators
+  p = ncol(Y)
+  pred.mean = matrix(NA, ncol = p, nrow = nrow(X.oaat))
+  pred.sd = matrix(NA, ncol = p, nrow = nrow(X.oaat))
+  
+  for(i in 1:p){
+    
+    y = Y[, i]
+    
+    em = twoStep.glmnet(X=X.norm, y=y, nugget=nugget, nuggetEstim=nuggetEstim,
+                                  noiseVar=noiseVar,
+                                  seed=seed, trace=trace, maxit=maxit,
+                                 REPORT=REPORT, factr=factr, pgtol=pgtol,
+                                 parinit=parinit, popsize=popsize)
+    
+    oaat.pred = predict(em$emulator, newdata = X.oaat, type = predtype)
+    
+    # produce the whole oaat emulator output
+    pred.mean[, i] = oaat.pred$mean
+    pred.sd[, i] = oaat.pred$sd
+    
+  }
+  
+  ix.kept = apply(pred.mean, 1, FUN = allin, mins = mins, maxes = maxes)
+  
+  # Replace out-of-bound rows in X with NA, to make plotting
+  # the final results easier
+  X.oaat.constr = X.oaat
+  X.oaat.constr[ix.kept==FALSE, ] <- NA
+  
+  pred.constr = pred.mean
+  pred.constr[ix.kept==FALSE, ] <- NA
+  
+  pred.sd.constr = pred.sd
+  pred.sd.constr[ix.kept==FALSE, ] <- NA
+  
+  # keep only the oaat emulator output within constraints
+  return(list(X.oaat.constr = X.oaat.constr,
+              ix.kept = ix.kept,
+              pred.constr = pred.constr,
+              pred.sd.constr = pred.sd.constr,
+              X.oaat = X.oaat,
+              pred.mean = pred.mean,
+              pred.sd = pred.sd)
+         )
+}
+
+inputs.set <- function(X, y, thres, obs, obs.sd = 0, disc = 0, disc.sd = 0, n = 100000, abt = FALSE){ 
+  # find a set of inputs that are consistent with a particular
+  # set of implausibility (either below or above)
+  
+  X.mins <- apply(X,2,min)
+  X.maxes <- apply(X,2,max)
+  X.unif <- samp.unif(n, mins = X.mins, maxes = X.maxes)
+  colnames(X.unif) <- colnames(X)
+  
+  fit <- km(~., design = X, response = y, control = list(trace = FALSE))
+  pred <- predict(fit, newdata = X.unif, type = 'UK')
+  pred.impl <- impl(em = pred$mean, em.sd = pred$sd,
+                    disc = disc, obs = obs, disc.sd = disc.sd, obs.sd = obs.sd)
+  
+  if(abt){
+    # choose those above the threshold 
+    ix.bt <- pred.impl > thres
+  }
+  
+  else{
+    ix.bt <- pred.impl < thres
+  }
+  
+  X.out <- X.unif[ix.bt, ]
+  
+  return(list(X.out = X.out, fit = fit, X.unif = X.unif, pred = pred,pred.impl = pred.impl))   
+}
+
+
+plausible.amazon.bc <- inputs.set(X = X_tropics_norm, y = Y_tropics,thres = 3,
+                                  obs = obs_amazon,
+                                  obs.sd = 0,
+                                  disc = 0,
+                                  disc.sd = 0.01,
+                                  n = 100000,
+                                  abt = FALSE)
+
+
+
+# Combine the above two to create a sensitivity analysis that excludes parts of input
+# parameter space that are deemed ruled out
+
+historymatch.oaat <- function(X, Y,
+                              thres,
+                              obs,
+                              obs.sd = 0, disc = 0, disc.sd = 0,
+                              n.oaat = 21, abt = FALSE,
+                              hold = NULL,
+                              predtype = 'UK',
+                              nugget=NULL, nuggetEstim=FALSE, noiseVar=NULL,
+                              seed=NULL, trace=FALSE, maxit=100,
+                              REPORT=10, factr=1e7, pgtol=0.0, parinit=NULL, 
+                              popsize=10
+                              ){
+ # X   ...   design
+ # Y   ...   Matrix of outputs, with rows matching rows of X
+  
+
+
+  d = ncol(X)
+  X.norm = normalize(X)
+  X.oaat = oaat.design(X.norm, n = n.oaat, med = TRUE, hold = hold)
+  colnames(X.oaat) = colnames(X)
+  
+  # generate ncol(Y) emulators
+  p = ncol(Y)
+  pred.mean = matrix(NA, ncol = p, nrow = nrow(X.oaat))
+  pred.sd = matrix(NA, ncol = p, nrow = nrow(X.oaat))
+  pred.impl = matrix(NA, ncol = p, nrow = nrow(X.oaat))
+  
+  for(i in 1:p){
+    
+    y = Y[, i]
+    
+    em = twoStep.glmnet(X=X.norm, y=y, nugget=nugget, nuggetEstim=nuggetEstim,
+                                  noiseVar=noiseVar,
+                                  seed=seed, trace=trace, maxit=maxit,
+                                 REPORT=REPORT, factr=factr, pgtol=pgtol,
+                                 parinit=parinit, popsize=popsize)
+    
+    oaat.pred = predict(em$emulator, newdata = X.oaat, type = predtype)
+    
+    # produce the whole oaat emulator output
+    pred.mean[, i] = oaat.pred$mean
+    pred.sd[, i] = oaat.pred$sd
+
+    # fix this up for each Y
+    pred.impl[, i] = impl(em = pred$mean, em.sd = pred$sd,
+                    disc = disc, obs = obs, disc.sd = disc.sd, obs.sd = obs.sd)
+
+  }
+  
+  # Replace out-of-bound rows in X with NA, to make plotting
+  # the final results easier
+
+
+  max.impl <- apply(pred.impl,2,max)
+  ix.bt <- max.impl < thres
+
+  X.oaat.constr = X.oaat
+  X.oaat.constr[ix.bt==FALSE, ] <- NA
+  
+  return(list(X.out = X.out,
+              X.oaat = X.oaat,
+              pred.impl = pred.impl))  
+ 
+}
+
+# Its going to be tricky - need to think about how the data is put together.
+# In the augmented emulator, everything is combined (i.e. there are three different
+# observations. Need the emulator from the combined data, but History matching
+# individual data streams.
+
+  
+
+
+
+normalize.na = function(X, wrt = NULL){ 
+  
+  f <- function(X){
+    (X-min(X, na.rm = TRUE))/(max(X, na.rm = TRUE)-min(X, na.rm = TRUE))
+  }
+  
+  # test to see if we have a matrix, array or data frame
+  if(length(dim(X))==2){
+    out <- apply(X,2,f)
+  }
+  
+  else{	
+    out <- f(X)
+  }
+  
+  if(is.null(wrt) == FALSE){
+    # if argument wrt is given
+    
+    n <- nrow(X)
+    mmins <- t(kronecker(apply(wrt,2,min, na.rm = TRUE),t(rep(1,n))))
+    mmaxs <- t(kronecker(apply(wrt,2,max, na.rm = TRUE),t(rep(1,n))))
+    
+    out <- (X-mmins)/(mmaxs-mmins)
+    
+  }
+  
+  out
+}
+
+# Express the standard in terms of lhs, then normalised matrices
+X.stan = c(rep(1, d-1),0)
+lhs.range = round( apply(lhs,2,range),1)
+
+# Standard parameters when compared to the initial latin hypercube
+X.stan.wrt.lhs = normalize(matrix(X.stan, nrow = 1), wrt = lhs.range)
+
+# Normalize BEFORE putting it in to the SA
+# Keep everything in relation to original design
+
+
+# Need to normalize the constraints too
+# Normalize everything compared to the initial data (dat.norm)
+mins.norm = normalize.na(matrix(mins.constr, nrow = 1), wrt = dat.norm)
+maxes.norm = normalize.na(matrix(maxes.constr, nrow = 1), wrt = dat.norm)
+
+
+Y.norm = normalize.na(dat.level0, wrt = dat.norm)
+
+glob.const.oaat = constrained.oaat(X = X.level0,
+  Y = Y.norm,
+  n.oaat = 21,
+  mins = mins.norm,
+  maxes = maxes.norm,
+  hold = X.stan.wrt.lhs
+  )
+
+
+# It's not constraining at the moment: why not?
+# Its the corners that are ruled out!!
+
+
+n = 21
+# Here is the full sensitivity analysis
+
+linecols.ext = c('black', paired)
+ylim = c(0,1)
+pdf(file = 'graphics/global_not_constrained_oaat.pdf', width = 9, height = 9)
+#dev.new(width = 9, height = 9)
+par(mfrow = c(4,8), mar = c(2,3,2,0.3), oma = c(0.5,0.5, 3, 0.5))
+ndat = ncol(glob.const.oaat$pred.mean)
+for(i in 1:d){
+  ix = seq(from = ((i*n) - (n-1)), to =  (i*n), by = 1)
+  
+  y.oaat = glob.const.oaat$pred.mean
+
+  plot(glob.const.oaat$X.oaat[ix,i], y.oaat[ix],
+       type = 'n',
+       ylab= '', ylim = ylim, axes = FALSE,
+       main = '',
+       xlab = '')
+  
+  for(j in 1:ndat){
+    y.oaat = glob.const.oaat$pred.mean[ix,j]
+    lines(glob.const.oaat$X.oaat[ix,i],y.oaat, col = linecols.ext[j], lwd = 2) 
+  }
+  axis(1, col = 'grey', col.axis = 'grey', las = 1)
+  axis(2, col = 'grey', col.axis = 'grey', las = 1)
+  mtext(3, text = colnames(lhs)[i], line = 0.2, cex = 0.7)  
+}
+reset()
+legend('top',
+       legend = colnames(dat.norm), 
+       col = linecols.ext,
+       cex = 0.8,
+       lwd = 2,
+       horiz = TRUE)
+dev.off()
+
+
+linecols.ext = c('black', paired)
+ylim = c(0,1)
+pdf(file = 'graphics/global_constrained_oaat.pdf', width = 9, height = 9)
+#dev.new(width = 9, height = 9)
+par(mfrow = c(4,8), mar = c(2,3,2,0.3), oma = c(0.5,0.5, 3, 0.5))
+ndat = ncol(glob.const.oaat$pred.constr)
+for(i in 1:d){
+  ix = seq(from = ((i*n) - (n-1)), to =  (i*n), by = 1)
+  
+  y.oaat = glob.const.oaat$pred.constr
+  
+  plot(c(0,1), c(0,1),
+       type = 'n',
+       ylab= '', ylim = ylim, axes = FALSE,
+       main = '',
+       xlab = '')
+  
+  for(j in 1:ndat){
+    y.oaat = glob.const.oaat$pred.constr[ix,j]
+    lines(glob.const.oaat$X.oaat.constr[ix,i],y.oaat, col = linecols.ext[j], lwd = 2) 
+  }
+  axis(1, col = 'grey', col.axis = 'grey', las = 1)
+  axis(2, col = 'grey', col.axis = 'grey', las = 1)
+  mtext(3, text = colnames(lhs)[i], line = 0.2, cex = 0.7)  
+}
+reset()
+legend('top',
+       legend = colnames(dat.level0), 
+       col = linecols.ext,
+       cex = 0.8,
+       lwd = 2,
+       horiz = TRUE)
+
+dev.off()
+
