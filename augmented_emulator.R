@@ -484,6 +484,27 @@ plot(X.fast$X[,'MOD_TEMP'], X.fast$X[,'MOD_PRECIP'])
 #plot(fast.firstorder, shapMC$shapley)
 
 
+#X.fast <- fast99(model = NULL, factors = colnames(X_tropics_norm), n = 1000,
+#                 q = "qunif", q.arg = list(min = 0, max = 1))
+
+#pred.fast = predict(tropics_fit, newdata = X.fast$X, type = 'UK')
+
+
+
+
+#shapleyPermRand(model = NULL, Xall, Xset, d, Nv, m, No = 1, Ni = 3, colnames = NULL, ...)
+
+     ## S3 method for class 'shapleyPermRand'
+
+#X.shapPR = shapleyPermRand(model = NULL, Xall, Xset, d, Nv, m, No = 1, Ni = 3, colnames = NULL, ...)
+
+#pred.shapPR = predict(tropics_fit, newdata = X.fast$X, type = 'UK')
+
+#tell(x, y = NULL, return.var = NULL, ...)
+
+
+
+
 
 # ------------------------------------------------------
 # Find the set of plausible inputs, when 
@@ -1107,6 +1128,258 @@ plot(X.climate[nroy.ix.climate.congo, c(8,9)], type = 'n', xlab = 'Normalised Re
 dfunc.up(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9])
 points(tp.congo.norm, pch =21, col = 'black', bg = 'red', cex = 1.5)
 dev.off()
+
+
+# -------------------------------------------------------------------------------------
+# Response to reviewers section:
+# What is the uncertainty in the input space that is NROY with respect
+# to climates
+# NOTE! X.climate only varies across the climate parameters
+# -------------------------------------------------------------------------------------
+
+dev.new()
+par(mfrow = c(2,2))
+
+cplot(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9],
+      pred.climate$mean[nroy.ix.climate.amaz],
+      cols = blues,
+      legend.title =  "emulator mean")
+
+cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
+      pred.climate$mean[nroy.ix.climate.seasia],
+      cols = blues,
+      legend.title =  "emulator mean")
+
+cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
+      pred.climate$mean[nroy.ix.climate.congo],
+      cols = blues,
+      legend.title =  "emulator mean"
+      )
+
+
+
+dev.new()
+par(mfrow = c(2,2))
+
+cplot(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9],
+      pred.climate$sd[nroy.ix.climate.amaz],
+      cols = blues,
+      legend.title =  "emulator sd")
+
+cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
+      pred.climate$sd[nroy.ix.climate.seasia],
+      cols = blues,
+      legend.title =  "emulator sd")
+
+cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
+      pred.climate$sd[nroy.ix.climate.congo],
+      cols = blues,
+      legend.title =  "emulator sd")
+
+
+# ---------------------------------------------------------------------------------
+# Response to reviewers
+# Monte carlo filtering for sensitivity analysis
+# ---------------------------------------------------------------------------------
+
+# Uniform sample from across parameter space
+# Split the sample into 'behavioural' (NROY) and 'Non behavioural (Ruled Out)
+# Build cdfs of the marginal distributions in each case
+# Perform a KS test to see if the smaples are drawn from different distributions
+# The KS statistic is an indicator of the importance of the parameter in splitting the
+# samples.
+
+# "Not in" function
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+mcf = function(X, nroy.ix){
+
+  ## Monte Carlo Filtering function
+  ## X   ............... Complete sample from input space
+  ## nroy.ix ........... index of cases of X which are NROY (Not Ruled Out Yet), or 'behavioural'.
+
+  ## produces ks statistic for each column of the input matrix X
+  ## A larger ks statistic means that input is more important for
+  ## determining if a sample is NROY or not
+
+  X.nroy = X[nroy.ix, ]
+
+  ref = 1:nrow(X)
+  ro.ix = which(ref %!in% nroy.ix)
+  X.ro = X[ro.ix, ]
+
+  kss = rep(NA, length = ncol(X))
+  for(i in 1:ncol(X)){
+
+    ks = ks.test(X.ro[,i], X.nroy[,i])
+    kss[i] = ks$statistic
+
+  }
+
+  out = kss
+  out
+}
+
+# First, use MCF on the design
+#
+# Calculate the implausibility of each input point for
+# each set of observations
+
+run.impl.amaz = impl(em = Y_tropics,
+  em.sd = 0,
+  disc = 0,
+  disc.sd = 0,
+  obs = obs_amazon,
+  obs.sd = 0.075)
+
+run.nroy.ix.amaz = which(run.impl.amaz < 3)
+
+run.impl.seasia = impl(em = Y_tropics,
+  em.sd = 0,
+  disc = 0,
+  disc.sd = 0,
+  obs = obs_seasia,
+  obs.sd = 0.075)
+
+run.nroy.ix.seasia = which(run.impl.seasia < 3)
+
+run.impl.congo = impl(em = Y_tropics,
+  em.sd = 0,
+  disc = 0,
+  disc.sd = 0,
+  obs = obs_congo,
+  obs.sd = 0.075)
+
+run.nroy.ix.congo = which(run.impl.congo < 3)
+
+
+mcf.amaz = mcf(X_tropics, run.nroy.ix.amaz)
+mcf.seasia = mcf(X_tropics, run.nroy.ix.seasia)
+mcf.congo = mcf(X_tropics, run.nroy.ix.congo)
+
+dev.new(width = 6, height = 6)
+par(mar = c(8,4,3,1))
+plot(1:ncol(X_tropics), mcf.amaz, col = col.amaz, pch = 19,
+     ylim = c(0,0.4),
+     ylab = 'MCF sensitivity', xlab = '',
+     axes = FALSE,
+     pty = 'n'
+     )
+abline(v = 1:ncol(X_tropics), lty = 'dashed', col = 'lightgrey')
+points(1:ncol(X_tropics), mcf.amaz, col = col.amaz, pch = 19)
+points(1:ncol(X_tropics), mcf.seasia, col = col.seasia, pch = 19)
+points(1:ncol(X_tropics), mcf.congo, col = col.congo, pch = 19)
+
+axis(side = 1, labels = colnames(X_tropics), las = 2, at = 1:ncol(X_tropics))
+axis(side = 2)
+
+
+# Could generate uncertainty estimates on the MCF by bootstrapping the samples.
+
+# If we were to emulate, we could just sample t/p locations from
+# the data.
+
+
+# First, generate a sample X, attach real t-p locations too it, and
+
+n.mcf = 1000
+X.mcf.part = samp.unif(n = n.mcf, mins = rep(0, ncol(X)), maxes = rep(1, ncol(X)))
+
+# Sample temperature and precipitation locations from the ensemble
+X.tp.ix = sample(1:nrow(X_tropics_norm), size = n.mcf, replace = TRUE)
+X.tp.runsamp = X_tropics_norm[X.tp.ix , c(8,9)]
+
+X.mcf = cbind(X.mcf.part, X.tp.runsamp)
+colnames(X.mcf) <- colnames(X_tropics_norm)
+
+pred.mcf = predict(tropics_fit, newdata = X.mcf, type = 'UK')
+
+# obs.sd chosen here to give a good 
+em.impl.mcf.amaz = impl(em = pred.mcf$mean,
+  em.sd = pred.mcf$sd,
+  disc = 0,
+  disc.sd = 0,
+  obs = obs_amazon,
+  obs.sd = 0.05)
+
+em.nroy.ix.amaz = which(em.impl.mcf.amaz < 3)
+
+em.mcf.amaz = mcf(X.mcf, em.nroy.ix.amaz)
+
+
+n.mcf = 1000
+nreps = 3000
+em.mcfmat.amaz = matrix(nrow = nreps, ncol = ncol(X_tropics_norm))
+
+for(i in 1:nreps){
+  
+  X.mcf.part = samp.unif(n = n.mcf, mins = rep(0, ncol(X)), maxes = rep(1, ncol(X)))
+  X.tp.ix = sample(1:nrow(X_tropics_norm), size = n.mcf, replace = TRUE)
+  X.tp.runsamp = X_tropics_norm[X.tp.ix , c(8,9)]
+
+  X.mcf = cbind(X.mcf.part, X.tp.runsamp)
+  colnames(X.mcf) <- colnames(X_tropics_norm)
+
+  pred.mcf = predict(tropics_fit, newdata = X.mcf, type = 'UK')
+
+  # obs.sd chosen here to give a good split
+  em.impl.mcf.amaz = impl(em = pred.mcf$mean,
+    em.sd = pred.mcf$sd,
+    disc = 0,
+    disc.sd = 0,
+    obs = obs_amazon,
+    obs.sd = 0.05)
+  
+  em.nroy.ix.amaz = which(em.impl.mcf.amaz < 3)
+
+  em.mcf.amaz = mcf(X.mcf, em.nroy.ix.amaz)
+  em.mcfmat.amaz[i, ] = em.mcf.amaz 
+
+}
+
+mcf.mean.amaz = apply(em.mcfmat.amaz, 2, mean)
+mcf.sd.amaz = apply(em.mcfmat.amaz, 2, sd)
+
+
+plot(1:length(mcf.mean.amaz), mcf.mean.amaz, pch = 19, col = col.amaz, ylim = c(0,0.4))
+
+segments(x0 = 1:length(mcf.mean.amaz), y0 = mcf.mean.amaz - (2*mcf.sd.amaz ),
+         x1 = 1:length(mcf.mean.amaz), y1 = mcf.mean.amaz + (2*mcf.sd.amaz ),
+         col = col.amaz)
+
+
+         
+
+
+
+# Make the above into a custom function
+# (custom because we have to sample from the temperature and precip runs)
+
+mcf.emboot = function(X, em, disc, disc.sd, obs, obs.sd, n.mcf = 1000, n.reps = 3000){
+
+  
+
+}
+
+
+
+
+
+
+
+
+mcf.seasia = mcf(X_tropics, run.nroy.ix.seasia)
+mcf.congo = mcf(X_tropics, run.nroy.ix.congo)
+  
+  
+
+
+
+
+
+
+
+
 
 
 # --------------------------------------------------------------
