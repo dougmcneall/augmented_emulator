@@ -1273,112 +1273,161 @@ points(1:ncol(X_tropics), mcf.congo, col = col.congo, pch = 19)
 axis(side = 1, labels = colnames(X_tropics), las = 2, at = 1:ncol(X_tropics))
 axis(side = 2)
 
+# -------------------------------------------------------------------------
+# Generate uncertainty estimates on the MCF by emulating and
+# bootstrapping the samples.
+# -------------------------------------------------------------------------
 
-# Could generate uncertainty estimates on the MCF by bootstrapping the samples.
-
-# If we were to emulate, we could just sample t/p locations from
-# the data.
-
-
-# First, generate a sample X, attach real t-p locations too it, and
-
-n.mcf = 1000
-X.mcf.part = samp.unif(n = n.mcf, mins = rep(0, ncol(X)), maxes = rep(1, ncol(X)))
-
-# Sample temperature and precipitation locations from the ensemble
-X.tp.ix = sample(1:nrow(X_tropics_norm), size = n.mcf, replace = TRUE)
-X.tp.runsamp = X_tropics_norm[X.tp.ix , c(8,9)]
-
-X.mcf = cbind(X.mcf.part, X.tp.runsamp)
-colnames(X.mcf) <- colnames(X_tropics_norm)
-
-pred.mcf = predict(tropics_fit, newdata = X.mcf, type = 'UK')
-
-# obs.sd chosen here to give a good 
-em.impl.mcf.amaz = impl(em = pred.mcf$mean,
-  em.sd = pred.mcf$sd,
-  disc = 0,
-  disc.sd = 0,
-  obs = obs_amazon,
-  obs.sd = 0.05)
-
-em.nroy.ix.amaz = which(em.impl.mcf.amaz < 3)
-
-em.mcf.amaz = mcf(X.mcf, em.nroy.ix.amaz)
-
-
-n.mcf = 1000
-nreps = 3000
-em.mcfmat.amaz = matrix(nrow = nreps, ncol = ncol(X_tropics_norm))
-
-for(i in 1:nreps){
+mcf.emboot = function(X, emfit, bootcol = c(8,9),
+  disc, disc.sd, obs, obs.sd, thres = 3, n.mcf = 1000, n.reps = 3000){
   
-  X.mcf.part = samp.unif(n = n.mcf, mins = rep(0, ncol(X)), maxes = rep(1, ncol(X)))
-  X.tp.ix = sample(1:nrow(X_tropics_norm), size = n.mcf, replace = TRUE)
-  X.tp.runsamp = X_tropics_norm[X.tp.ix , c(8,9)]
+  ## Function that does Monte Carlo Filtering using an emulated sample.
+  ## Inputs for emulation are sampled from the unit cube apart from
+  ## those in columns bootcol, which are bootstrapped from the design.
+  ##
 
-  X.mcf = cbind(X.mcf.part, X.tp.runsamp)
-  colnames(X.mcf) <- colnames(X_tropics_norm)
+  em.mcfmat = matrix(nrow = n.reps, ncol = ncol(X))
 
-  pred.mcf = predict(tropics_fit, newdata = X.mcf, type = 'UK')
+  for(i in 1:n.reps){
 
-  # obs.sd chosen here to give a good split
-  em.impl.mcf.amaz = impl(em = pred.mcf$mean,
+                                        # Sample from uniform distributions for the
+                                        # standard input parameters
+    X.mcf = samp.unif(n = n.mcf, mins = rep(0, ncol(X)), maxes = rep(1, ncol(X)))
+    
+                                        # Sample from the model run inputs for the temp and precip
+                                        # (here indicated by bootcol columns)
+    X.tp.ix = sample(1:nrow(X), size = n.mcf, replace = TRUE)
+    X.tp.runsamp = X[X.tp.ix , bootcol]
+    
+                                        # bind the samples together
+    X.mcf[, bootcol] = X.tp.runsamp
+    colnames(X.mcf) <- colnames(X)
+
+    # Predict model output at the sampled inputs
+    pred.mcf = predict(emfit, newdata = X.mcf, type = 'UK')
+
+    # find the implausibility of the predicted inputs
+    em.impl.mcf = impl(em = pred.mcf$mean,
     em.sd = pred.mcf$sd,
-    disc = 0,
-    disc.sd = 0,
-    obs = obs_amazon,
-    obs.sd = 0.05)
+      disc = disc,
+      disc.sd = disc.sd,
+      obs = obs,
+      obs.sd = obs.sd)
+
+    # Which part of the sample is NROY (or "behavioural")
+    em.nroy.ix = which(em.impl.mcf < thres)
+    
+    em.mcf= mcf(X.mcf, em.nroy.ix)
+    em.mcfmat[i, ] = em.mcf
+    
+  }
   
-  em.nroy.ix.amaz = which(em.impl.mcf.amaz < 3)
+  mcf.mean = apply(em.mcfmat, 2, mean)
+  mcf.sd = apply(em.mcfmat, 2, sd)
 
-  em.mcf.amaz = mcf(X.mcf, em.nroy.ix.amaz)
-  em.mcfmat.amaz[i, ] = em.mcf.amaz 
 
+  return(list(mean = mcf.mean, sd = mcf.sd))
 }
 
-mcf.mean.amaz = apply(em.mcfmat.amaz, 2, mean)
-mcf.sd.amaz = apply(em.mcfmat.amaz, 2, sd)
+
+mcf.em.amaz = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_amazon, obs.sd = 0.05,
+  thres = 3, n.mcf = 4000, n.reps = 3000)
+
+mcf.em.seasia = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_seasia, obs.sd = 0.05,
+  thres = 3, n.mcf = 4000, n.reps = 3000)
+
+mcf.em.congo = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_congo, obs.sd = 0.05,
+  thres = 3, n.mcf = 4000, n.reps = 3000)
 
 
-plot(1:length(mcf.mean.amaz), mcf.mean.amaz, pch = 19, col = col.amaz, ylim = c(0,0.4))
+# Plot both the run-generated and emulated MCF sensitivity
+#dev.new(width = 8, height = 6)
+pdf(file = 'graphics/mcf.pdf', width = 8, height = 6)
+par(las = 1, mar = c(8,4,4,2))
+ylim = c(0,0.35)
+plot((1:length(mcf.em.amaz$mean))-0.2, mcf.em.amaz$mean,
+     pch = 19, col = col.amaz, ylim = ylim, xlim = c(0.5,9.5),
+     pty = 'n', xaxs = 'i', yaxs = 'i',
+     xlab = '', ylab = 'KS statistic',
+     axes = FALSE)
 
-segments(x0 = 1:length(mcf.mean.amaz), y0 = mcf.mean.amaz - (2*mcf.sd.amaz ),
-         x1 = 1:length(mcf.mean.amaz), y1 = mcf.mean.amaz + (2*mcf.sd.amaz ),
+i = seq(from = 1, to = 10, by = 2)
+rect(i-0.5, ylim[1], i+0.5, ylim[2], col = "lightgrey", border=NA)
+
+points((1:length(mcf.em.amaz$mean))-0.2, mcf.em.amaz$mean, pch = 19, col = col.amaz)
+points((1:length(mcf.em.amaz$mean))-0.2, mcf.amaz, pch = 21, col = col.amaz)
+
+
+points(1:length(mcf.em.seasia$mean), mcf.em.seasia$mean, pch = 19, col = col.seasia)
+points((1:length(mcf.em.amaz$mean)), mcf.seasia, pch = 21, col = col.seasia)
+
+segments(x0 = 1:length(mcf.em.seasia$mean), y0 = mcf.em.seasia$mean - (2*mcf.em.seasia$sd ),
+         x1 = 1:length(mcf.em.seasia$mean), y1 = mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
+         col = col.seasia)
+
+
+segments(x0 = (1:length(mcf.em.amaz$mean)) - 0.2, y0 = mcf.em.amaz$mean - (2*mcf.em.amaz$sd ),
+         x1 = (1:length(mcf.em.amaz$mean)) - 0.2, y1 = mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
          col = col.amaz)
 
+points((1:length(mcf.em.congo$mean))+0.2, mcf.em.congo$mean, pch = 19, col = col.congo)
+points((1:length(mcf.em.congo$mean))+0.2, mcf.congo, pch = 21, col = col.congo)
 
-         
+segments(x0 = (1:length(mcf.em.congo$mean))+0.2, y0 = mcf.em.congo$mean - (2*mcf.em.congo$sd ),
+         x1 = (1:length(mcf.em.congo$mean))+0.2, y1 = mcf.em.congo$mean + (2*mcf.em.congo$sd),
+         col = col.congo)
 
+axis(1, labels = colnames(X_tropics_norm), at = 1:9, las = 2)
+axis(2)
 
-
-# Make the above into a custom function
-# (custom because we have to sample from the temperature and precip runs)
-
-mcf.emboot = function(X, em, disc, disc.sd, obs, obs.sd, n.mcf = 1000, n.reps = 3000){
-
+legend('topleft',legend = c('Amazon','SE Asia', 'C Africa'),
+       col = c(col.amaz, col.seasia, col.congo), pch = 19, bty = 'n')
+text(0.5, 0.25, 'Vertical lines indicate \n \u00B1 2 standard deviations',
+     pos  = 4, col = 'black',cex = 0.8 )
+text(0.5, 0.22, 'Open points indicate model-only results',
+     pos  = 4, col = 'black',cex = 0.8 )
+dev.off()
   
 
-}
+# How does this sensitivity analysis measure up to the FAST99 version?
+pdf(width = 7, height = 7, file = 'graphics/fast99_vs_mcf1.pdf')
+par(mar = c(5,5,3,2), las = 1)
+plot(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = 19,
+     ylim = c(0,0.35), xlim = c(0,0.35),
+     xlab = 'FAST99 first-order sensitivity',
+     ylab = 'MCF sensitivity (KS statistic)'
+     )
+
+segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.amaz$mean - (2*mcf.em.amaz$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
+         col = col.amaz)
+
+points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = 19)
+segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.seasia$mean - (2*mcf.em.seasia$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
+         col = col.seasia)
+
+points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = 19)
+segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.congo$mean - (2*mcf.em.congo$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.congo$mean + (2*mcf.em.congo$sd),
+         col = col.congo)
+
+points(print(fast.tell)[,1], mcf.amaz, col = col.amaz)
+points(print(fast.tell)[,1], mcf.seasia, col = col.seasia)
+points(print(fast.tell)[,1], mcf.congo, col = col.congo)
+
+legend('topleft',legend = c('Amazon','SE Asia', 'C Africa'),       
+       col = c(col.amaz, col.seasia, col.congo), pch = 19, bty = 'n')
+text(-0.015, 0.29, 'Vertical lines indicate \n \u00B1 2 standard deviations',
+     pos  = 4, col = 'black',cex = 0.8 )
+text(-0.015, 0.27, 'Open points indicate model-only results',
+     pos  = 4, col = 'black',cex = 0.8 )
 
 
-
-
-
-
-
-
-mcf.seasia = mcf(X_tropics, run.nroy.ix.seasia)
-mcf.congo = mcf(X_tropics, run.nroy.ix.congo)
-  
-  
-
-
-
-
-
-
-
+dev.off()
 
 
 
