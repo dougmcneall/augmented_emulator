@@ -154,7 +154,7 @@ tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = TRUE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
@@ -501,8 +501,6 @@ plot(X.fast$X[,'MOD_TEMP'], X.fast$X[,'MOD_PRECIP'])
 #pred.shapPR = predict(tropics_fit, newdata = X.fast$X, type = 'UK')
 
 #tell(x, y = NULL, return.var = NULL, ...)
-
-
 
 
 
@@ -1330,24 +1328,92 @@ mcf.emboot = function(X, emfit, bootcol = c(8,9),
 }
 
 
+# How big might the uncertainty bounds be if we use just 300 points
+# (as in the ensemble) to estimate the MCF sensitivity analysis indices?
+
+n.mcf.seq = c(seq(from = 100, to = 1000, by = 100), 1500, 2000, 3000)
+mcf.seq.mean = matrix(NA, nrow = length(n.mcf.seq), ncol = ncol(X_tropics_norm))
+mcf.seq.sd = matrix(NA, nrow = length(n.mcf.seq), ncol = ncol(X_tropics_norm))
+
+for(i in 1:length(n.mcf.seq)){
+
+mcf.em.amaz.seq = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_amazon, obs.sd = 0.05,
+  thres = 3, n.mcf = n.mcf.seq[i], n.reps = 1000)
+
+mcf.seq.mean[i, ] = mcf.em.amaz.seq$mean
+mcf.seq.sd[i, ] = mcf.em.amaz.seq$sd
+
+}
+
+# What is our estimate of MCF uncertainty when we have 300 ensemble members?
+mcf.em.amaz.300 = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_amazon, obs.sd = 0.05,
+  thres = 3, n.mcf = 300, n.reps = 1000)
+
+mcf.em.seasia.300 = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_seasia, obs.sd = 0.05,
+  thres = 3, n.mcf = 300, n.reps = 1000)
+
+mcf.em.congo.300 = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
+  bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_congo, obs.sd = 0.05,
+  thres = 3, n.mcf = 300, n.reps = 1000)
+
+
+
+cbPal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+# The Mean and the Standard deviation of the estimate
+# of MCF sensitivity both drop as the number of MCF samples increases.
+
+#dev.new(width = 10, height = 8)
+pdf(width = 10, height = 8, file = 'graphics/mcf_mean_sd_vs_n.pdf')
+par(mfrow = c(1,2), las = 1)
+
+matplot(n.mcf.seq, mcf.seq.mean, main = 'Mean', xlab = 'Emulated Ensemble members', ylab = 'KS statistic Mean', type = 'o', col = cbPal)
+
+matplot(n.mcf.seq, mcf.seq.sd, main = 'Standard deviation', xlab = 'Emulated Ensemble members', ylab = 'KS statistic standard deviation', type = 'o', col = cbPal)
+
+legend('topright', pch = as.character(1:9), legend = colnames(X_tropics_norm), col = cbPal, text.col = cbPal)
+dev.off()
+
+
+# This puts the mean and estimate MCF sensitivity indices in context with their
+# estimated uncertainty.
+dev.new(width = 6, height = 10)
+matplot(n.mcf.seq, mcf.seq.mean, main = 'Mean', xlab = 'Ensemble members', ylab = 'MCF Sensitivity Index', type = 'o', col = rep(cbPal,2), ylim = c(0,0.35), pch = 19, lwd = 1.2, lty = 'solid')
+
+for(i in 1: ncol(mcf.seq.mean)){
+  
+arrows(x0 = n.mcf.seq, y0 = mcf.seq.mean[,i] - (mcf.seq.sd[,i]),
+         x1 = n.mcf.seq, y1 = mcf.seq.mean[,i] + (mcf.seq.sd[, i]),
+         length=0.05, angle=90, code=3, col = rep(cbPal,2)[i],lwd = 1.2
+         )
+}
+
+
+# Calculate MCF indices with 5000 emulated ensemble members.
+# Bootstrap uncertainty estimates.
 mcf.em.amaz = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
   bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_amazon, obs.sd = 0.05,
-  thres = 3, n.mcf = 4000, n.reps = 3000)
+  thres = 3, n.mcf = 5000, n.reps = 1000)
 
 mcf.em.seasia = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
   bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_seasia, obs.sd = 0.05,
-  thres = 3, n.mcf = 4000, n.reps = 3000)
+  thres = 3, n.mcf = 5000, n.reps = 1000)
 
 mcf.em.congo = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
   bootcol = c(8,9), disc = 0, disc.sd = 0, obs = obs_congo, obs.sd = 0.05,
-  thres = 3, n.mcf = 4000, n.reps = 3000)
+  thres = 3, n.mcf = 5000, n.reps = 1000)
+
 
 
 # Plot both the run-generated and emulated MCF sensitivity
 #dev.new(width = 8, height = 6)
 pdf(file = 'graphics/mcf.pdf', width = 8, height = 6)
 par(las = 1, mar = c(8,4,4,2))
-ylim = c(0,0.35)
+ylim = c(0,0.43)
 plot((1:length(mcf.em.amaz$mean))-0.2, mcf.em.amaz$mean,
      pch = 19, col = col.amaz, ylim = ylim, xlim = c(0.5,9.5),
      pty = 'n', xaxs = 'i', yaxs = 'i',
@@ -1358,77 +1424,133 @@ i = seq(from = 1, to = 10, by = 2)
 rect(i-0.5, ylim[1], i+0.5, ylim[2], col = "lightgrey", border=NA)
 
 points((1:length(mcf.em.amaz$mean))-0.2, mcf.em.amaz$mean, pch = 19, col = col.amaz)
+
+arrows(x0 = (1:length(mcf.em.amaz$mean)) - 0.2, y0 = mcf.em.amaz$mean - (2*mcf.em.amaz$sd ),
+         x1 = (1:length(mcf.em.amaz$mean)) - 0.2, y1 = mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
+         col = col.amaz, length=0.05, angle=90, code=3)
+
 points((1:length(mcf.em.amaz$mean))-0.2, mcf.amaz, pch = 21, col = col.amaz)
+
+arrows(x0 = 1:length(mcf.em.amaz$mean)-0.2, y0 = mcf.amaz - (2*mcf.em.amaz.300$sd ),
+       x1 = 1:length(mcf.em.amaz$mean)-0.2, y1 = mcf.amaz + (2*mcf.em.amaz.300$sd),
+       lty = 'dotted',
+       col = col.amaz, length=0.05, angle=90, code=3)
 
 
 points(1:length(mcf.em.seasia$mean), mcf.em.seasia$mean, pch = 19, col = col.seasia)
+
+arrows(x0 = 1:length(mcf.em.seasia$mean), y0 = mcf.em.seasia$mean - (2*mcf.em.seasia$sd ),
+         x1 = 1:length(mcf.em.seasia$mean), y1 = mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
+         col = col.seasia, length=0.05, angle=90, code=3)
+
+
 points((1:length(mcf.em.amaz$mean)), mcf.seasia, pch = 21, col = col.seasia)
 
-segments(x0 = 1:length(mcf.em.seasia$mean), y0 = mcf.em.seasia$mean - (2*mcf.em.seasia$sd ),
-         x1 = 1:length(mcf.em.seasia$mean), y1 = mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
-         col = col.seasia)
+arrows(x0 = 1:length(mcf.em.amaz$mean), y0 = mcf.seasia - (2*mcf.em.seasia.300$sd ),
+       x1 = 1:length(mcf.em.amaz$mean), y1 = mcf.seasia + (2*mcf.em.seasia.300$sd),
+       lty = 'dotted',
+       col = col.seasia, length=0.05, angle=90, code=3)
 
-
-segments(x0 = (1:length(mcf.em.amaz$mean)) - 0.2, y0 = mcf.em.amaz$mean - (2*mcf.em.amaz$sd ),
-         x1 = (1:length(mcf.em.amaz$mean)) - 0.2, y1 = mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
-         col = col.amaz)
 
 points((1:length(mcf.em.congo$mean))+0.2, mcf.em.congo$mean, pch = 19, col = col.congo)
+
+arrows(x0 = (1:length(mcf.em.congo$mean))+0.2, y0 = mcf.em.congo$mean - (2*mcf.em.congo$sd ),
+         x1 = (1:length(mcf.em.congo$mean))+0.2, y1 = mcf.em.congo$mean + (2*mcf.em.congo$sd),
+         col = col.congo,length=0.05, angle=90, code=3)
+
 points((1:length(mcf.em.congo$mean))+0.2, mcf.congo, pch = 21, col = col.congo)
 
-segments(x0 = (1:length(mcf.em.congo$mean))+0.2, y0 = mcf.em.congo$mean - (2*mcf.em.congo$sd ),
-         x1 = (1:length(mcf.em.congo$mean))+0.2, y1 = mcf.em.congo$mean + (2*mcf.em.congo$sd),
-         col = col.congo)
+arrows(x0 = 1:length(mcf.em.amaz$mean)+0.2, y0 = mcf.congo - (2*mcf.em.congo.300$sd ),
+       x1 = 1:length(mcf.em.amaz$mean) +0.2, y1 = mcf.congo + (2*mcf.em.congo.300$sd),
+       lty = 'dotted',
+       col = col.congo, length=0.05, angle=90, code=3)
+
+
+
 
 axis(1, labels = colnames(X_tropics_norm), at = 1:9, las = 2)
 axis(2)
 
 legend('topleft',legend = c('Amazon','SE Asia', 'C Africa'),
        col = c(col.amaz, col.seasia, col.congo), pch = 19, bty = 'n')
-text(0.5, 0.25, 'Vertical lines indicate \n \u00B1 2 standard deviations',
+text(0.5, 0.32, 'Error bars indicate \n \u00B1 2 standard deviations',
      pos  = 4, col = 'black',cex = 0.8 )
-text(0.5, 0.22, 'Open points indicate model-only results',
+text(0.5, 0.29, 'Open points & dotted lines indicate ensemble-only results',
      pos  = 4, col = 'black',cex = 0.8 )
 dev.off()
-  
+
 
 # How does this sensitivity analysis measure up to the FAST99 version?
-pdf(width = 7, height = 7, file = 'graphics/fast99_vs_mcf1.pdf')
-par(mar = c(5,5,3,2), las = 1)
-plot(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = 19,
-     ylim = c(0,0.35), xlim = c(0,0.35),
+pdf(width = 12, height = 7, file = 'graphics/fast99_vs_mcf2.pdf')
+#dev.new(width = 12, height = 7)
+par(mfrow = c(1,2), mar = c(5,5,3,2), las = 1)
+
+plot(print(fast.tell)[,1], mcf.amaz, col = col.amaz, pch = as.character(1:9),
+     ylim = c(0,0.42), xlim = c(0,0.32),
      xlab = 'FAST99 first-order sensitivity',
-     ylab = 'MCF sensitivity (KS statistic)'
+     ylab = 'MCF sensitivity (KS statistic)',
+     main = 'MCF using 300 ensemble members',
+     pty = 'n'
      )
 
-segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.amaz$mean - (2*mcf.em.amaz$sd),
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.amaz - (2*mcf.em.amaz.300$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.amaz + (2*mcf.em.amaz.300$sd),
+         col = col.amaz, length=0.05, angle=90, code=3,
+       lty = 'solid', lwd = 0.8)
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.seasia - (2*mcf.em.seasia.300$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.seasia + (2*mcf.em.seasia.300$sd),
+         col = col.seasia, length=0.05, angle=90, code=3,
+       lty = 'solid', lwd = 0.8)
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.congo - (2*mcf.em.congo.300$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.congo + (2*mcf.em.congo.300$sd),
+         col = col.congo, length=0.05, angle=90, code=3,
+       lty = 'solid', lwd = 0.8)
+
+
+points(print(fast.tell)[,1], mcf.amaz, col = col.amaz, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.seasia, col = col.seasia, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.congo, col = col.congo, pch = as.character(1:9), font = 2)
+
+legend('topleft', pch = as.character(1:9), legend = colnames(X_tropics_norm), cex = 0.8, bty = 'n')
+
+legend('top', lty = 'solid', legend = c('Amazon', 'SE Asia', 'C Africa'),
+       text.col = c(col.amaz,col.seasia, col.congo),
+       col = c(col.amaz,col.seasia, col.congo)
+       , cex = 0.8, bty = 'n')
+
+abline(0,1, lty = 'dashed')
+
+
+plot(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.character(1:9),
+     ylim = c(0,0.42), xlim = c(0,0.32),
+     xlab = 'FAST99 first-order sensitivity',
+     ylab = 'MCF sensitivity (KS statistic)',
+     pty = 'n',
+     main = 'MCF using 5000 emulated ensemble members'
+     )
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.amaz$mean - (2*mcf.em.amaz$sd),
          x1 = print(fast.tell)[,1], y1 =  mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
-         col = col.amaz)
+         col = col.amaz,length=0.05, angle=90, code=3)
 
-points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = 19)
-segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.seasia$mean - (2*mcf.em.seasia$sd),
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.seasia$mean - (2*mcf.em.seasia$sd),
          x1 = print(fast.tell)[,1], y1 =  mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
-         col = col.seasia)
+         col = col.seasia,length=0.05, angle=90, code=3)
 
-points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = 19)
-segments(x0 = print(fast.tell)[,1], y0 =  mcf.em.congo$mean - (2*mcf.em.congo$sd),
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.congo$mean - (2*mcf.em.congo$sd),
          x1 = print(fast.tell)[,1], y1 =  mcf.em.congo$mean + (2*mcf.em.congo$sd),
-         col = col.congo)
+         col = col.congo,length=0.05, angle=90, code=3)
 
-points(print(fast.tell)[,1], mcf.amaz, col = col.amaz)
-points(print(fast.tell)[,1], mcf.seasia, col = col.seasia)
-points(print(fast.tell)[,1], mcf.congo, col = col.congo)
+points(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = as.character(1:9), font = 2)
 
-legend('topleft',legend = c('Amazon','SE Asia', 'C Africa'),       
-       col = c(col.amaz, col.seasia, col.congo), pch = 19, bty = 'n')
-text(-0.015, 0.29, 'Vertical lines indicate \n \u00B1 2 standard deviations',
-     pos  = 4, col = 'black',cex = 0.8 )
-text(-0.015, 0.27, 'Open points indicate model-only results',
-     pos  = 4, col = 'black',cex = 0.8 )
 
+abline(0,1, lty = 'dashed')
 
 dev.off()
-
 
 
 # --------------------------------------------------------------
