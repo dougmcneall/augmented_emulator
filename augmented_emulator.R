@@ -150,6 +150,9 @@ Y_tropics = c(famous_agg$AMAZ_MOD_FRAC, famous_agg$SEASIA_MOD_FRAC, famous_agg$C
 # Standard emulator fit to all tropical forests
 tropics_fit = km(~., design = X_tropics_norm, response=Y_tropics)
 
+# "flat prior" emulator fit to all tropical forests
+tropics.flat = km(~1, design = X_tropics_norm, response=Y_tropics)
+
 # ----------------------------------------------------------------------------------
 # Emulator diagnostics
 #
@@ -413,6 +416,142 @@ legend('top', legend = c('Amazon', 'SE Asia', 'C Africa'),
 
 dev.off()
 
+
+# Reviewer 1 would like to know how the one-at-a-time sensitivity analysis might
+# be affected by changing the prior form of the emulator.
+
+## build a matrix of OAT predictions
+oat.mean.mat.flat = matrix(nrow = n*length(amaz.x), ncol = length(xlist))
+oat.sd.mat.flat = matrix(nrow = n*length(amaz.x), ncol = length(xlist))
+
+for(i in 1:length(xlist)){
+  
+  X.oat = oaat.design(X_tropics_norm, n = n, hold = xlist[[i]])
+  colnames(X.oat) = colnames(xlist[[i]])
+  pred.sens.flat = predict(tropics.flat, newdata = X.oat, type = 'UK')
+  oat.mean.mat.flat[, i ] = pred.sens.flat$mean
+  oat.sd.mat.flat[, i ] = pred.sens.flat$sd
+}
+
+pdf(width = 7, height = 6, file = 'graphics/sensitivity_TP_all_flatprior.pdf')
+#dev.new(width = 7, height = 6)
+par(mfrow = c(2,5), las = 1, mar = c(5,0.5,3,0.5), oma = c(0,5,0,0), fg = 'grey')
+
+for(i in 1: ncol(X_tropics_norm)){
+  
+  ix <- seq(from = ((i*n) - (n-1)), to =  (i*n), by = 1)
+  plot(X.oat[ix, i], pred.sens.flat$mean[ix], ylim = c(0,1), xlab = colnames(X.oat)[i], type = 'n', axes = FALSE)
+  axis(1)
+  if (i==1 | i==6 ) {axis(2)
+    mtext(side = 2, line = 3.5, text = 'Forest fraction', las = 0, col = 'black')
+  }
+  for(j in 1:length(xlist)){
+    
+    col.chosen = col.list[[j]]
+    col.transp = adjustcolor(col.chosen, alpha = 0.5)
+    
+    pred.mean = oat.mean.mat.flat[, j]
+    pred.sd   = oat.sd.mat.flat[, j]
+    
+    polygon(x = c(X.oat[ix, i], rev(X.oat[ix, i])),
+            y = c( (pred.mean[ix] - pred.sd[ix]), rev(pred.mean[ix] + pred.sd[ix])),
+            col = col.transp, border = col.transp)
+    
+    lines(X.oat[ix, i], pred.mean[ix], ylim = c(0,1), xlab = colnames(X.oat)[i], col = col.chosen )
+  }
+}
+reset()
+legend('top', legend = c('Amazon', 'SE Asia', 'C Africa'), 
+       col = c(col.list, recursive = TRUE),
+       lty = 'solid', lwd = 1, pch = NA, bty = 'n',
+       text.col = 'black',
+       fill = adjustcolor(c(col.list, recursive = TRUE), alpha = 0.5),
+       cex = 1.2, border = NA, horiz = TRUE)
+
+dev.off()
+
+
+
+# calculate the implausibility of the oat matrix for each of the three forests,
+# and remove those points with an implausibility over 3 
+oat.impl.mat = matrix(nrow = n*length(amaz.x), ncol = length(xlist))
+
+for(i in 1:length(xlist)){
+  
+  X.oat = oaat.design(X_tropics_norm, n = n, hold = xlist[[i]])
+  colnames(X.oat) = colnames(xlist[[i]])
+  pred.sens = predict(fit.sens, newdata = X.oat, type = 'UK')
+  oat.mean.mat[, i ] = pred.sens$mean
+  oat.sd.mat[, i ] = pred.sens$sd
+  
+  impl.sens = impl(em = pred.sens$mean, em.sd = pred.sens$sd,
+    disc = 0, obs = obs[i], disc.sd = 0, obs.sd = 0.05)
+  oat.impl.mat[,i] = impl.sens 
+}
+
+oat.mean.mat[oat.impl.mat > 3] <- NA
+oat.sd.mat[oat.impl.mat > 3] <- NA
+
+
+pdf(width = 7, height = 6, file = 'graphics/sensitivity_TP_no_NROY.pdf')
+par(mfrow = c(2,5), las = 1, mar = c(5,0.5,3,0.5), oma = c(0,5,0,0), fg = 'grey')
+
+for(i in 1: ncol(X_tropics_norm)){
+  
+  ix <- seq(from = ((i*n) - (n-1)), to =  (i*n), by = 1)
+  plot(X.oat[ix, i], oat.mean.mat[ix, 1], ylim = c(0,1), xlab = colnames(X.oat)[i], type = 'n', axes = FALSE)
+  axis(1)
+  if (i==1 | i==6 ) {axis(2)
+    mtext(side = 2, line = 3.5, text = 'Forest fraction', las = 0, col = 'black')
+  }
+  
+  for(j in 1:length(xlist)){
+    
+    col.chosen = col.list[[j]]
+    col.transp = adjustcolor(col.chosen, alpha = 0.5)
+    
+    pred.mean = oat.mean.mat[ix, j]
+    pred.sd   = oat.sd.mat[ix, j]
+
+   
+    # This code plots polygon subsets
+    enc <- rle(!is.na(pred.mean))
+    
+    endIdxs <- cumsum(enc$lengths)
+    for(k in 1:length(enc$lengths)){
+      if(enc$values[k]){
+        
+        endIdx <- endIdxs[k]
+        startIdx <- endIdx - enc$lengths[k] + 1
+        
+        subx <- X.oat[ix[startIdx:endIdx], i]
+        subsd <- pred.sd[startIdx:endIdx]
+        submean <- pred.mean[startIdx:endIdx]
+        
+        x <- c(subx, rev(subx))
+        y <- c(submean - subsd, rev(submean + subsd))
+        
+        
+        polygon(x = x, y = y, col = col.transp, border = NA)
+      }
+    }
+    #polygon end
+   
+    lines(X.oat[ix, i], pred.mean, ylim = c(0,1), xlab = colnames(X.oat)[i], col = col.chosen )
+  }
+}
+reset()
+legend('top', legend = c('Amazon', 'SE Asia', 'C Africa'), 
+       col = c(col.list, recursive = TRUE),
+       lty = 'solid', lwd = 1, pch = NA, bty = 'n',
+       text.col = 'black',
+       fill = adjustcolor(c(col.list, recursive = TRUE), alpha = 0.5),
+       cex = 1.2, border = NA, horiz = TRUE)
+dev.off()
+
+
+
+
 # ------------------------------------------------------------------
 # FAST99 sensitivity analysis of Saltelli et al (1999)
 # generate the design to run the emulator at, using fast99
@@ -441,6 +580,21 @@ par(las = 2, mar = c(9,5,3,2))
 barplot(bp.convert(fast.tell), col = c('skyblue', 'grey'), ylab = 'relative sensitivity')
 legend('topleft',legend = c('Main effect', 'Interactions'), fill = c('skyblue', 'grey') )
 dev.off()
+
+
+
+# Reviewer 1 asks how the prior form of the emulator influences the sensitivity analyses
+
+pred.fast.flat = predict(tropics.flat, newdata = X.fast$X, type = 'UK')
+fast.flat.tell <- tell(X.fast, pred.fast.flat$mean)
+pdf(width = 7, height = 5, file = 'graphics/fast_flat_barplot.pdf')
+par(las = 2, mar = c(9,5,3,2))
+barplot(bp.convert(fast.flat.tell), col = c('orange', 'grey'), ylab = 'relative sensitivity')
+legend('topleft',legend = c('Main effect', 'Interactions'), fill = c('skyblue', 'grey') )
+dev.off()
+
+
+
 
 
 # Reviewer 1 asks how the Fast algorithm might be impacted because some of the
@@ -624,7 +778,8 @@ pdf(width = 7, height = 7, file = 'graphics/taat_temp_precip_quilt.pdf')
 par(las = 1)
 quilt.plot(X.taat.tp[,8], X.taat.tp[,9], y.taat.tp$mean, 
            col = viridis(ncol), nx = 21, ny = 21,
-           xlab = 'Normalised Regional Mean Temperature', ylab = 'Normalised Regional Mean Precipitation')
+           xlab = 'Normalised Regional Mean Temperature', ylab = 'Normalised Regional Mean Precipitation',
+           zlim = range(allz))
 
 cex = 1.4
 lwd = 1.5
@@ -644,6 +799,47 @@ shadowtext(tp.congo.norm[1], tp.congo.norm[2], 'Central Africa', pos = 4, font =
 shadowtext(tp.seasia.norm[1], tp.seasia.norm[2], 'SE Asia', pos = 4, font = 2, r = 0.2)
 
 dev.off()
+
+# Reviewer 1 would like to know how the flat-prior emulator
+# affects the two-at-a-time analysis.
+# Note, need to fix the colour scales here.
+
+
+# sample from the emulator
+y.taat.tp.flat = predict(tropics.flat, newdata = X.taat.tp, type = 'UK')
+
+# Can use quilt plot as long as the number of points in either direction matches the
+# data.
+ncol = 11
+allz = c(Y_tropics,obs_amazon,obs_seasia, obs_congo, y.taat.tp.flat$mean)
+zcolor = col3rd(n=ncol, pal=viridis(ncol), z = allz) 
+
+pdf(width = 7, height = 7, file = 'graphics/taat_flat_temp_precip_quilt.pdf')
+par(las = 1)
+quilt.plot(X.taat.tp[,8], X.taat.tp[,9], y.taat.tp.flat$mean, 
+           col = viridis(ncol), nx = 21, ny = 21,
+           xlab = 'Normalised Regional Mean Temperature', ylab = 'Normalised Regional Mean Precipitation',
+           zlim = range(allz))
+
+cex = 1.4
+lwd = 1.5
+points(X_tropics_norm[1:100,8], X_tropics_norm[1:100,9], 
+       col = 'black', bg = zcolor[1:100], pch = 21, cex = cex, lwd = lwd)
+points(X_tropics_norm[101:200,8], X_tropics_norm[101:200,9], 
+       col = 'black', bg = zcolor[101:200], pch = 22, cex = cex, lwd = lwd)
+points(X_tropics_norm[201:300,8], X_tropics_norm[201:300,9], 
+       col = 'black', bg = zcolor[201:300], pch = 24, cex = cex, lwd = lwd)
+
+points(tp.amaz.norm, col = 'black', pch = 21, cex = 2.5, bg = zcolor[301], lwd = 2)
+points(tp.seasia.norm, col = 'black', pch = 22, cex = 2.5, bg = zcolor[302], lwd = 2)
+points(tp.congo.norm, col = 'black', pch = 24, cex = 2.5, bg = zcolor[303], lwd = 2)
+
+shadowtext(tp.amaz.norm[1],tp.amaz.norm[2], 'Amazon', pos = 4, font = 2,r =0.2)
+shadowtext(tp.congo.norm[1], tp.congo.norm[2], 'Central Africa', pos = 4, font = 2, r = 0.2)
+shadowtext(tp.seasia.norm[1], tp.seasia.norm[2], 'SE Asia', pos = 4, font = 2, r = 0.2)
+
+dev.off()
+
 
 # ------------------------------------------------------------------------
 # We worked out the response surface for y = f(X, T, P).
@@ -1078,7 +1274,7 @@ dev.off()
 
 n = 100000
 X.tp = samp.unif(n = n, mins = c(0,0), maxes = c(1,1))
-test = matrix()
+#test = matrix()
 
 X.climate = cbind(matrix(rep(X.stan.norm,n), nrow = n, byrow = TRUE), X.tp)
 colnames(X.climate) = colnames(X_tropics_norm)
@@ -1135,44 +1331,56 @@ dev.off()
 # NOTE! X.climate only varies across the climate parameters
 # -------------------------------------------------------------------------------------
 
-dev.new()
-par(mfrow = c(2,2))
+pdf(width = 6, height = 10, file = 'graphics/em_nroy_mean_sd_tp.pdf')
+par(mfrow = c(3,2))
 
 cplot(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9],
       pred.climate$mean[nroy.ix.climate.amaz],
       cols = blues,
-      legend.title =  "emulator mean")
-
-cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
-      pred.climate$mean[nroy.ix.climate.seasia],
-      cols = blues,
-      legend.title =  "emulator mean")
-
-cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
-      pred.climate$mean[nroy.ix.climate.congo],
-      cols = blues,
-      legend.title =  "emulator mean"
-      )
-
-
-
-dev.new()
-par(mfrow = c(2,2))
+      main = 'Amazon',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator mean")
 
 cplot(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9],
       pred.climate$sd[nroy.ix.climate.amaz],
       cols = blues,
-      legend.title =  "emulator sd")
+      main = 'Amazon',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator sd")
+
+
+
+cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
+      pred.climate$mean[nroy.ix.climate.seasia],
+      cols = blues,
+      main = 'SE Asia',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator mean")
 
 cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
       pred.climate$sd[nroy.ix.climate.seasia],
       cols = blues,
-      legend.title =  "emulator sd")
+      main = 'SE Asia',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator sd")
+
+
+cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
+      pred.climate$mean[nroy.ix.climate.congo],
+      cols = blues,
+      main = 'C Africa',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator mean"
+      )
 
 cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
       pred.climate$sd[nroy.ix.climate.congo],
       cols = blues,
-      legend.title =  "emulator sd")
+      main = 'C Africa',
+      xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
+      legend.title =  "Emulator sd")
+dev.off()
+
 
 
 # ---------------------------------------------------------------------------------
@@ -1809,16 +2017,55 @@ text(tp.seasia.norm, 'SE Asia', pos = 4, font = 2)
 dev.off()
 
 
-
 fit.holdout1 = km(~., design = X.train.holdout1, response = y.train.holdout1)
 pred.holdout1 = predict(fit.holdout1, newdata = X.test.holdout1, type = 'UK')
 
-plot(1:6, y.test.holdout1, ylim = c(0,1), pch = 19)
-points(1:6, pred.holdout1$mean, ylim = c(0,1), col = 'darkgrey')
-segments(x0 = 1:6, y0 = pred.holdout1$mean - (2*pred.holdout1$sd),
-         x1 = 1:6, y1 = pred.holdout1$mean + (2*pred.holdout1$sd),
+# Does the prior form of the emulator (i.e. a linear model) matter for the prediction?
+fit.holdout.flat = km(~1, design = X.train.holdout1, response = y.train.holdout1)
+pred.holdout.flat = predict(fit.holdout.flat, newdata = X.test.holdout1, type = 'UK')
+
+# Interestingly, using a "flat" prior yields a slightly smaller
+# Mean absolute Error (MAE) than a linear prior in the holdout sample. 
+sum(abs( pred.holdout1$mean - y.test.holdout1))
+sum(abs( pred.holdout.flat$mean - y.test.holdout1))
+
+
+#dev.new(width = 7, height = 4)
+pdf(file = 'graphics/loo_v_holdout_flat_prediction_error.pdf', width = 7, height = 4)
+par(las = 1)
+plot(1:6, y.test.holdout1, xlim = c(1,6.2),
+     ylim = c(0,1), pch = 19, col = 'black',
+     ylab = 'forest fraction',
+     xlab = 'held-out ensemble member'
+     )
+
+points(1.1:6.1, pred.holdout1$mean, ylim = c(0,1), col = 'darkgrey', pch = 19)
+points(1.2:6.2, pred.holdout.flat$mean, ylim = c(0,1), col = 'orange', pch = 19)
+
+segments(x0 = 1.1:6.1, y0 = pred.holdout1$mean - (2*pred.holdout1$sd),
+         x1 = 1.1:6.1, y1 = pred.holdout1$mean + (2*pred.holdout1$sd),
          col = 'darkgrey'
          )
+
+segments(x0 = 1.2:6.2, y0 = pred.holdout.flat$mean - (2*pred.holdout.flat$sd),
+         x1 = 1.2:6.2, y1 = pred.holdout.flat$mean + (2*pred.holdout.flat$sd),
+         col = 'orange'
+         )
+
+abline(h = range(Y_tropics), col = 'darkgrey', lty = 'dashed')
+
+legend('bottomright',
+       col = c('black', 'darkgrey', 'orange'),
+       pch = 19,
+       legend = c('Ensemble member','Linear prior prediction', 'Flat prior prediction'),
+       bty = 'n',
+       cex = 0.8, pt.cex = 1,
+       inset = 0.08
+       )
+text(1,0.1, labels = 'Dashed lines are ensemble limits', col = 'darkgrey', cex = 0.8,
+     pos = 4)
+dev.off()
+
 
 
 # Sort predictions by forest fraction magnitude for plotting
@@ -1913,6 +2160,25 @@ err.holdout1 = pred.holdout1$mean - y.test.holdout1
 dev.new()
 plot(1:6, abs(loo.err.holdout1), pch = 19, col = 'blue', ylim = c(0,0.06))
 points(1:6, abs(err.holdout1), pch = 19, col = 'red')
+
+
+# Compare linear prior with flat prior for leave-on-out prediction
+
+leaveOneOut.km
+ km(~., design = X.train.holdout1, response = y.train.holdout1)
+
+tropics.flat = km(~1, design = X_tropics_norm, response = Y_tropics)
+
+  
+flat.loo = leaveOneOut.km(tropics.flat, type = 'UK', trend.reestim=TRUE)
+fit.loo =  leaveOneOut.km(tropics_fit, type = 'UK', trend.reestim=TRUE)
+
+flat.mae = mean(abs(flat.loo$mean - Y_tropics))
+fit.mae = mean(abs(fit.loo$mean - Y_tropics))
+
+flat.meanunc = mean(flat.loo$sd)
+fit.meanunc = mean(fit.loo$sd)
+
 
 
 # -------------------------------------------------------------------------
