@@ -300,25 +300,6 @@ We test the reliability of uncertainty estimates of the emulator by checking tha
 
 \section{Analyses}\label{sec:analyses}
 
-\subsection{Sensitivity analysis}\label{ssec:sensitivity}
-The emulator allows us to measure the sensitivity of forest fraction to the land surface input parameters simultaneously with climate variables temperature and precipitation. We measure the one-at-a-time sensitivity to parameters and climate variables, using the emulator to predict changes in forest fraction as each variable is changed from the lowest to highest setting in turn, with all other parameters at the default settings or observed values. We present the results in fig. \ref{fig:sensitivity_TP_all}. Parameters NL0 and V\_CRIT\_ALPHA and climate variables temperature and precipitation exert strong influences of similar magnitudes on forest fraction. Shaded regions represent the uncertainty of the sensitivity to each parameter, due to estimated emulator uncertainty of $\pm$ 2 standard deviations. This sensitivity measure does not include the extra uncertainty due to the fact that the relationships will change depending on the position of the other parameters. We do however see a measure of how temperature and precipitation affect the marginal response of the other parameters, as the observed climates of each forest are different. For example, we clearly see that the response of the forest fraction to e.g. NL0 depends on climate - the forest fraction response is a noticeably different shape when varied under the mean climate of the South East Asian region.
-
-\begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/sensitivity_TP_all.pdf}
-\caption{One-at-a-time sensitivity of forest fraction variation of each parameter and climate variable in turn across the entire ensemble range. All other parameters or variables are held at their default values while each parameter is varied. Solid lines represent the emulator mean and shaded areas represent $\pm$ 2 standard deviations of emulator uncertainty.
-}
-\label{fig:sensitivity_TP_all}
-\end{figure}
-
-A quantitative measure of sensitivity of the model output to parameters that does take into account interactions with other parameters is found using the FAST99 algorithm of \cite{saltelli1999sensitivity}, summarised in fig. \ref{fig:fast_barplot}. Precipitation and Temperature are the second and third most important parameters, more important than NL0, and only slightly less important than V\_CRIT\_ALPHA. Interaction terms contribute a small but non-negligible part to the sensitivity.
-
-\begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/fast_barplot.pdf}
-\caption{Sensitivity of forest fraction to model parameters and climate parameters, found using the FAST99 algorithm of \cite{saltelli1999sensitivity}.
-}
-\label{fig:fast_barplot}
-\end{figure}
-
 \subsection{The joint impacts of temperature and precipitation on forest fraction}\label{ssec:joint}
 What impact do temperature and precipitation have on forest fraction together? We use the emulator from section \ref{ssec:augmented} and predict the simulator output across the entire range of simulated temperature and precipitation, while holding the other inputs at their default values. The marginal impacts of temperature and precipitation on forest fraction are clear in fig. \ref{fig:taat_temp_precip_quilt}. Ensemble member temperature, precipitation and forest fraction, taken from fig. \ref{fig:fraction_vs_temp_precip_pcolcor} are overplotted for comparison. Temperature and precipitation values are normalised to the range of the ensemble in this plot.
 
@@ -465,6 +446,29 @@ Central Africa         &    0.915 & 0.337  &   1 \\
 \belowtable{} % Table Footnotes
 \label{tab:shared_space}
 \end{table*}
+
+\subsection{Sensitivity analysis}\label{ssec:sensitivity}
+The emulator allows us to measure the sensitivity of forest fraction to the land surface input parameters simultaneously with climate variables temperature and precipitation. We measure the one-at-a-time sensitivity to parameters and climate variables, using the emulator to predict changes in forest fraction as each variable is changed from the lowest to highest setting in turn, with all other parameters at the default settings or observed values. We present the results in fig. \ref{fig:sensitivity_TP_no_NROY}. In this diagram, we exclude emulated forests that are deemed implausible according to the criteria in section \ref{ssec:history_matching}. This is to avoid potentially over-estimating the sensitivity of forest fraction to (for example) temperature and precipitation by including results from regions of parameter space far from existing ensemble members, and in very different climate regimes from existing broadleaf tropical forests. 
+
+ Parameters NL0 and V\_CRIT\_ALPHA and climate variables temperature and precipitation exert strong influences of similar magnitudes on forest fraction. Shaded regions represent the uncertainty of the sensitivity to each parameter, due to estimated emulator uncertainty of $\pm$ 2 standard deviations. This sensitivity measure does not include the extra uncertainty due to the fact that the relationships will change depending on the position of the other parameters. We do however see a measure of how temperature and precipitation affect the marginal response of the other parameters, as the observed climates of each forest are different. For example, we clearly see that the response of the forest fraction to e.g. NL0 depends on climate - the forest fraction response is a noticeably different shape when varied under the mean climate of the South East Asian region.
+
+\begin{figure}[t]
+\includegraphics[width=12cm]{../graphics/sensitivity_TP_no_NROY.pdf}
+\caption{One-at-a-time sensitivity of forest fraction variation of each parameter and climate variable in turn across the entire ensemble range. All other parameters or variables are held at their default values while each parameter is varied. Solid lines represent the emulator mean and shaded areas represent $\pm$ 2 standard deviations of emulator uncertainty.
+}
+\label{fig:sensitivity_TP_no_NROY}
+\end{figure}
+
+
+A quantitative measure of sensitivity of the model output to parameters that does take into account interactions with other parameters is found using the FAST99 algorithm of \cite{saltelli1999sensitivity}, summarised in fig. \ref{fig:fast_barplot}. Precipitation and Temperature are the second and third most important parameters, more important than NL0, and only slightly less important than V\_CRIT\_ALPHA. Interaction terms contribute a small but non-negligible part to the sensitivity.
+
+\begin{figure}[t]
+\includegraphics[width=12cm]{../graphics/fast_barplot.pdf}
+\caption{Sensitivity of forest fraction to model parameters and climate parameters, found using the FAST99 algorithm of \cite{saltelli1999sensitivity}.
+}
+\label{fig:fast_barplot}
+\end{figure}
+
 
 
 
