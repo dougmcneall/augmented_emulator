@@ -82,6 +82,25 @@ We test the importance of the prior form of the emulator may be important in ext
 \end{figure}
 
 
+\section{Monte Carlo filtering}
+
+We investigate the impact of sample size on the Monte Carlo Filtering (MCF) estimates of parameter uncertainty and their uncertainty. We calculate a sampling uncertainty by calculating the MCF sensitivity metrics 1000 times, each time using a sample size of between 100 and 3000 emulated points from the input space. In this way, we estimate both the mean and the uncertainty (standard deviation) of that mean, when using a different number of ensemble members to calculate the MCF sensitivity indices, including that for 300 members, our ensemble size. We plot these in fig. \ref{fig:mcf_mean_sd_vs_n}.
+
+\begin{figure}[t]
+\includegraphics[width=12cm]{../graphics/mcf_mean_sd_vs_n.pdf}
+\caption{ Mean (left) and standard deviation (right) of the KS statistic the Monte Carlo Filtering index of sensitivity, calculated using different sizes of emulated ensembles.}
+\label{fig:mcf_mean_sd_vs_n}
+\end{figure}
+
+We note that the sensitivity indices are calculated higher when a small number of ensemble members are used, as well as with a higher uncertainty. The change in both the estimated statistic and its uncertainty have begun to become small by the time 3000 ensemble members are used, suggesting that we should use at least this many emulated ensemble members to obtain an approximately unbiased sensitivity analysis. We use 5000 emulated members for our analysis in the main paper.
+
+We examine the relationship between the MCF sensitivity measures and the FAST99 sensitivity measures, to see if the latter might overestimate the sensitivity of forest fraction to temperature and precipitation, due to sampling a corner of input space with no tropical forest. We plot only the FAST99 first-order sensitivity, as we do not expect MCF sensitivity to be able to measure interactions between inputs accurately. We find a fairly strong relationship between the two sensitivity measures, although we would expect some differences, as they are measuring different things, and MCF is not sampling from locations in temperature and precipitation space where there are no ensemble members. The FAST99 algorithm produces very similar sensitivity indices (perhaps fortuitously, as they measure on a different scale) for temperature and precipitation as the MCF algorithm for the Amazon forest, but the Southeast Asian and Central African forests appear less sensitive to these inputs when estimated using the MCF algorithm.
+
+\begin{figure}[t]
+\includegraphics[width=12cm]{../graphics/fast99_vs_mcf2.pdf}
+\caption{Relationship between the first-order sensitivity of input parameters calculated by the FAST99 algorithm, and that calculated by the Monte Carlo Filtering (MCF) algorithm. The sensitivity indices calculated only using the ensemble members are plotted on the left, with uncertainty estimated by using an emulated 300 member ensemble. On the right, we plot the sensitivity indices when calculated using 5000 emulated ensemble members.}
+\label{fig:fast99_vs_mcf2}
+\end{figure}
 
 \section{Forest regions}
 
