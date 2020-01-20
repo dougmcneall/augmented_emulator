@@ -98,11 +98,35 @@ We examine the relationship between the MCF sensitivity measures and the FAST99 
 
 \begin{figure}[t]
 \includegraphics[width=12cm]{../graphics/fast99_vs_mcf2.pdf}
-\caption{Relationship between the first-order sensitivity of input parameters calculated by the FAST99 algorithm, and that calculated by the Monte Carlo Filtering (MCF) algorithm. The sensitivity indices calculated only using the ensemble members are plotted on the left, with uncertainty estimated by using an emulated 300 member ensemble. On the right, we plot the sensitivity indices when calculated using 5000 emulated ensemble members.}
+\caption{Relationship between the first-order sensitivity of input parameters calculated by the FAST99 algorithm, and that calculated by the Monte Carlo Filtering (MCF) algorithm. The sensitivity indices calculated only using the ensemble members are plotted on the left, with uncertainty estimated by using an emulated 300 member ensemble. On the right, we plot the sensitivity indices and associated uncertainty when calculated using 5000 emulated ensemble members.}
 \label{fig:fast99_vs_mcf2}
 \end{figure}
 
-\section{Forest regions}
+\section{The FAMOUS climate model}
+
+\subsection{Model Parameters}
+
+We show a list of FAMOUS model land surface input parameters in table \ref{tab:params}.
+
+\begin{table*}[t]
+\caption{Land surface input parameters for FAMOUS}\label{tab:params}
+\begin{tabular}{lrll}
+
+\tophline
+Parameter &  Default & Units & Description \\
+F0              &   0.875  & & Ratio of CO$_2$ concentrations inside and outside leaves at zero humidity deficit. \\
+LAI\_MIN    &   3  &  & PFT must achieve this value of LAI before starting to contend with other PFTs for growing area. \\
+NL0           &     0.03  & kgN/kgC &  Top leaf nitrogen concentration. The amount of nitrogen per amount of carbon. \\
+R\_GROW    &    0.250 &  & Growth respiration fraction. \\
+TUPP        &  36  & \textdegree C & Control on variation of photosynthesis with temperature. \\
+Q10           &  2  & & Control on soil respiration with temperature. \\
+V\_CRIT\_ALPHA  & 0.5 &  & Control of photosynthesis with soil moisture. \\
+\bottomhline
+\end{tabular}
+\belowtable{} % Table Footnotes
+\end{table*}
+
+\subsection{Forest regions}
 
 Forest fraction data is taken by calculating the mean broadleaf forest fraction in the areas shown in figure \ref{fig:map_forests}. Mean temperature and precipitation from the model are calculated for the corresponding regions and time period. The regions are: Amazon 15\textdegree S - 15\textdegree N, 270\textdegree E - 315\textdegree E; Central Africa; 15\textdegree S - 10\textdegree N, 7.5\textdegree E - 30\textdegree E; SE Asia 12\textdegree S - 10\textdegree N, 90\textdegree E - 150\textdegree E.
 
