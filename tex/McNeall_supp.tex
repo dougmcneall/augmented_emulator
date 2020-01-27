@@ -26,7 +26,7 @@ $$
 
 where $\theta$ describes the \emph{characteristic length scales} - a measure of how quickly information about the function is lost moving away from a design point, in any dimension. This and other hyperparameters are estimated via maximum likelihood estimation from the design $(Y, X)$, meaning that the approach is not fully Bayesian (such an approach would find posterior distributions for the hyperparameters rather than point estimates). We use Universal Kriging, with no `nugget' term, meaning that the uncertainty on model outputs shrinks to zero at the design points. 
 
-Full details of the Universal kriging process used can be found in \citep{roustant2012dicekriging}, section 2.1, details of the kernel can be found in section 2.3, and examples of the trend and hyperparameter estimation  in section 3 the same publication. 
+Full details of the Universal kriging process used can be found in \cite{roustant2012dicekriging}, section 2.1, details of the kernel can be found in section 2.3, and examples of the trend and hyperparameter estimation  in section 3 of the same publication. 
 
 
 \section{Further emulator verification}
@@ -102,9 +102,9 @@ We examine the relationship between the MCF sensitivity measures and the FAST99 
 \label{fig:fast99_vs_mcf2}
 \end{figure}
 
-\section{The FAMOUS climate model}
+\section{The FAMOUS climate model}\label{ssec:famous_model}
 
-\subsection{Model Parameters}
+\subsection{Model Parameters}\label{ssec:model_params}
 
 We show a list of FAMOUS model land surface input parameters in table \ref{tab:params}.
 
