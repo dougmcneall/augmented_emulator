@@ -1616,10 +1616,58 @@ mcf.em.congo = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
   thres = 3, n.mcf = 5000, n.reps = 1000)
 
 
+dev.new(width = 9, height = 6)
+pdf(file = 'graphics/mcf.pdf', width = 8, height = 6)
+par(las = 1, mar = c(8,4,3,1))
+
+ylim = c(0,0.27)
+xlim = c(0.5,9.5)
+
+plot((1:length(mcf.em.amaz$mean))-0.15, mcf.em.amaz$mean,
+     pch = 19, col = col.amaz, ylim = ylim, xlim = xlim,
+     pty = 'n', xaxs = 'i', yaxs = 'i',
+     xlab = '', ylab = 'KS statistic',
+     axes = FALSE)
+
+i = seq(from = 1, to = 10, by = 2)
+rect(i-0.5, ylim[1], i+0.5, ylim[2], col = "grey92", border=NA)
+
+points((1:length(mcf.em.amaz$mean))-0.15, mcf.em.amaz$mean, pch = 19, col = col.amaz)
+
+arrows(x0 = (1:length(mcf.em.amaz$mean))-0.15, y0 = mcf.em.amaz$mean - (2*mcf.em.amaz$sd ),
+         x1 = (1:length(mcf.em.amaz$mean))-0.15, y1 = mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
+         col = col.amaz, length=0.05, angle=90, code=3)
+
+points((1:length(mcf.em.seasia$mean)), mcf.em.seasia$mean, pch = 19, col = col.seasia)
+
+arrows(x0 = 1:length(mcf.em.seasia$mean), y0 = mcf.em.seasia$mean - (2*mcf.em.seasia$sd ),
+         x1 = 1:length(mcf.em.seasia$mean), y1 = mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
+         col = col.seasia, length=0.05, angle=90, code=3)
+
+points((1:length(mcf.em.congo$mean))+0.15, mcf.em.congo$mean, pch = 19, col = col.congo)
+
+arrows(x0 = (1:length(mcf.em.congo$mean))+0.15, y0 = mcf.em.congo$mean - (2*mcf.em.congo$sd ),
+         x1 = (1:length(mcf.em.congo$mean))+0.15, y1 = mcf.em.congo$mean + (2*mcf.em.congo$sd),
+         col = col.congo,length=0.05, angle=90, code=3)
+
+
+axis(1, labels = colnames(X_tropics_norm), at = 1:9, las = 2)
+axis(2)
+
+legend('topleft',legend = c('Amazon','SE Asia', 'C Africa'),
+       col = c(col.amaz, col.seasia, col.congo), pch = 19, bty = 'n')
+text(0.5, 0.20, 'Error bars indicate \n \u00B1 2 standard deviations',
+     pos  = 4, col = 'black',cex = 0.8 )
+
+dev.off()
+
+
+
+
 
 # Plot both the run-generated and emulated MCF sensitivity
 #dev.new(width = 8, height = 6)
-pdf(file = 'graphics/mcf.pdf', width = 8, height = 6)
+pdf(file = 'graphics/mcf_300_5000.pdf', width = 8, height = 6)
 par(las = 1, mar = c(8,4,4,2))
 ylim = c(0,0.43)
 plot((1:length(mcf.em.amaz$mean))-0.2, mcf.em.amaz$mean,
