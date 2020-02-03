@@ -157,7 +157,7 @@ tropics.flat = km(~1, design = X_tropics_norm, response=Y_tropics)
 # Emulator diagnostics
 #
 # ----------------------------------------------------------------------------------
-run_diagnostics = FALSE # The diagnostics section is slow, so only set to TRUE if you have the time
+run_diagnostics =TRUE# The diagnostics section is slow, so only set to TRUE if you have the time
 if(run_diagnostics){
   
   # Plot the emulator against the true leave-one-out prediction
@@ -1616,8 +1616,8 @@ mcf.em.congo = mcf.emboot(X = X_tropics_norm, em = tropics_fit,
   thres = 3, n.mcf = 5000, n.reps = 1000)
 
 
-dev.new(width = 9, height = 6)
-pdf(file = 'graphics/mcf.pdf', width = 8, height = 6)
+#dev.new(width = 9, height = 6)
+pdf(file = 'graphics/mcf.pdf', width = 9, height = 6)
 par(las = 1, mar = c(8,4,3,1))
 
 ylim = c(0,0.27)
@@ -1807,6 +1807,48 @@ points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = as.charac
 abline(0,1, lty = 'dashed')
 
 dev.off()
+
+# Just use the 5000 ensemble member example for the paper.
+pdf(width = 7, height = 7, file = 'graphics/fast99_vs_mcf3.pdf')
+#dev.new(width = 12, height = 7)
+par(mar = c(5,5,3,2), las = 1)
+
+plot(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.character(1:9),
+     ylim = c(0,0.32), xlim = c(0,0.32),
+     xlab = 'FAST99 first-order sensitivity',
+     ylab = 'MCF sensitivity (KS statistic)',
+     pty = 'n'
+     )
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.amaz$mean - (2*mcf.em.amaz$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.amaz$mean + (2*mcf.em.amaz$sd),
+         col = col.amaz,length=0.05, angle=90, code=3)
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.seasia$mean - (2*mcf.em.seasia$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.seasia$mean + (2*mcf.em.seasia$sd),
+         col = col.seasia,length=0.05, angle=90, code=3)
+
+arrows(x0 = print(fast.tell)[,1], y0 =  mcf.em.congo$mean - (2*mcf.em.congo$sd),
+         x1 = print(fast.tell)[,1], y1 =  mcf.em.congo$mean + (2*mcf.em.congo$sd),
+         col = col.congo,length=0.05, angle=90, code=3)
+
+points(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = as.character(1:9), font = 2)
+points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = as.character(1:9), font = 2)
+
+
+abline(0,1, lty = 'dashed')
+
+legend('topleft', pch = as.character(1:9), legend = colnames(X_tropics_norm), cex = 0.8, bty = 'n')
+
+legend('top', lty = 'solid', legend = c('Amazon', 'SE Asia', 'C Africa'),
+       text.col = c(col.amaz,col.seasia, col.congo),
+       col = c(col.amaz,col.seasia, col.congo)
+       , cex = 0.8, bty = 'n')
+
+
+dev.off()
+
 
 
 # --------------------------------------------------------------
@@ -2151,6 +2193,44 @@ legend('topleft', pch = 20, col = c('black', 'red', 'darkgrey'),
 dev.off()
 
 
+# Plot predicted forest fraction against forest fraction for a more compact plot.
+pdf(file = 'graphics/holdout1_vs_loo_compact.pdf', width = 7, height = 7)
+par(las = 1)
+plot(Y_tropics, true.loo.all$mean, pch = 20, col = 'grey',
+     xlim = c(-0.05, 1),ylim = c(-0.050,1), xaxs = 'i',
+     xlab = 'forest fraction',
+     ylab = 'predicted forest fraction'
+     )
+
+y0 = (true.loo.all$mean - (2*true.loo.all$sd))
+y1 = (true.loo.all$mean + (2*true.loo.all$sd))
+
+segments(x0 = Y_tropics, y0 = y0,
+         x1 = Y_tropics,y1 = y1,
+         col = 'grey'
+         )
+
+points(y.test.holdout1, col = 'red', pred.holdout1$mean, pch = 20,
+     xlab = 'forest fraction',
+     ylab = 'predicted forest fraction')
+
+segments(x0 =  y.test.holdout1, y0 = pred.holdout1$mean - (2*pred.holdout1$sd),
+         x1 =  y.test.holdout1, y1 = pred.holdout1$mean + (2*pred.holdout1$sd),
+         col = 'red'
+         )
+
+abline(0,1, col = 'darkgrey')
+
+legend('topleft', pch = 20, col = c('red', 'grey'),
+       legend = c('hold-out sample','leave-one-out'))
+
+text(-0.05, 0.80, 'Error bars indicate \n \u00B1 2 standard deviations',
+     pos  = 4, col = 'black',cex = 0.8 )
+
+dev.off()
+
+
+
 # Histogram of leave-one-out and holdout errors
 pdf(file = 'graphics/holdout1_error_hist.pdf', width = 6, height = 5)
 hist(true.loo.all$mean - Y_tropics, col = 'darkgrey',
@@ -2163,6 +2243,14 @@ legend('topleft', pch = c('|',NA), col = c('red', NA),
 
 rug(pred.holdout1$mean - y.test.holdout1, col = 'red', lwd = 2)
 dev.off()
+
+
+
+
+
+
+
+
 
 
 # Compare leave-one-out error against hold-out error for the 6 members.

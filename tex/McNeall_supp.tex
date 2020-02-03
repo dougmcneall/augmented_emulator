@@ -48,9 +48,9 @@ In order to test ewe hold out 6 ensemble members in the region of and nearest to
 Figure \ref{fig:holdout1_vs_loo} shows the prediction of the 6 held-out ensemble members (red dots) in the context of the leave-one-out validation (black dots). In the held-out case, we fit the emulator based on the 294 remaining ensemble members, and predict all 6 held out members at the same time. As the training set is slightly smaller than each leave-one-out training set (299 members), and the emulator is expected to extrapolate further, we might expect a significant degradation in the performance of the emulator in prediction. As we see in fig. \ref{fig:holdout1_vs_loo}, there is little evidence of such a degradation. Both prediction error and estimated uncertainty are well within the bounds of that found during the leave-one-out validation exercise.
 
 \begin{figure}[t]
-\includegraphics[width=15cm]{../graphics/holdout1_vs_loo.pdf}
-\caption{Predictions (grey dots) of forest fraction ensemble members in a leave-one-out validation exercise (black dots) and for the 6 held-out ensemble members (red dots).}
-\label{fig:holdout1_vs_loo}
+\includegraphics[width=12cm]{../graphics/holdout1_vs_loo_compact.pdf}
+\caption{Predictions of forest fraction ensemble members in a leave-one-out validation exercise (grey dots) and for the 6 held-out ensemble members (red dots).}
+\label{fig:holdout1_vs_loo_compact}
 \end{figure}
 
 Figure \ref{fig:holdout1_error_hist} shows the prediction error for the 6 members, in the context of the histogram of errors from the leave-one-out exercise. None of the errors are near the limits of the distribution, even though they might be expected to be larger, with a smaller training set and deeper extrapolation.
@@ -88,11 +88,11 @@ We investigate the impact of sample size on the Monte Carlo Filtering (MCF) esti
 
 \begin{figure}[t]
 \includegraphics[width=12cm]{../graphics/mcf_mean_sd_vs_n.pdf}
-\caption{ Mean (left) and standard deviation (right) of the KS statistic the Monte Carlo Filtering index of sensitivity, calculated using different sizes of emulated ensembles.}
+\caption{ Mean (left) and standard deviation (right) of the KS statistic the Monte Carlo Filtering index of sensitivity, estimated using different sizes of emulated ensembles.}
 \label{fig:mcf_mean_sd_vs_n}
 \end{figure}
 
-We note that the sensitivity indices are calculated higher when a small number of ensemble members are used, as well as with a higher uncertainty. The change in both the estimated statistic and its uncertainty have begun to become small by the time 3000 ensemble members are used, suggesting that we should use at least this many emulated ensemble members to obtain an approximately unbiased sensitivity analysis. We use 5000 emulated members for our analysis in the main paper.
+We note that the sensitivity indices are estimated higher when a small number of ensemble members are used, as well as with a higher uncertainty. The change in both the estimated statistic and its uncertainty have begun to become small by the time 3000 ensemble members are used, suggesting that we should use at least this many emulated ensemble members to obtain an approximately unbiased sensitivity analysis. We use 5000 emulated members for our analysis in the main paper.
 
 We examine the relationship between the MCF sensitivity measures and the FAST99 sensitivity measures, to see if the latter might overestimate the sensitivity of forest fraction to temperature and precipitation, due to sampling a corner of input space with no tropical forest. We plot only the FAST99 first-order sensitivity, as we do not expect MCF sensitivity to be able to measure interactions between inputs accurately. We find a fairly strong relationship between the two sensitivity measures, although we would expect some differences, as they are measuring different things, and MCF is not sampling from locations in temperature and precipitation space where there are no ensemble members. The FAST99 algorithm produces very similar sensitivity indices (perhaps fortuitously, as they measure on a different scale) for temperature and precipitation as the MCF algorithm for the Amazon forest, but the Southeast Asian and Central African forests appear less sensitive to these inputs when estimated using the MCF algorithm.
 
