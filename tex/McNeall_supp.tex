@@ -29,7 +29,7 @@ where $\theta$ describes the \emph{characteristic length scales} - a measure of 
 Full details of the Universal kriging process used can be found in \cite{roustant2012dicekriging}, section 2.1, details of the kernel can be found in section 2.3, and examples of the trend and hyperparameter estimation  in section 3 of the same publication. 
 
 
-\section{Further emulator verification}
+\section{Further emulator verification}\label{sec:further_verification}
 
 Bias correction using the augmented emulator relies on good predictions uing the emulator in the regions of temperature/precipitation space corresponding to observations of the real world. A concern is that there are few ensemble members near the observed values for the Amazon and Central African forests, and that the emulator is forced to extrapolate to estimate forest fraction at these locations. Gaussian process emulators can sometimes perform poorly in extrapolation. Further, it is a concern that the lack of ensemble members near the observations means it is difficult to est the accuracy of the emulator at these important locations.
 
@@ -45,7 +45,7 @@ In order to test ewe hold out 6 ensemble members in the region of and nearest to
 \end{figure}
 
 
-Figure \ref{fig:holdout1_vs_loo} shows the prediction of the 6 held-out ensemble members (red dots) in the context of the leave-one-out validation (black dots). In the held-out case, we fit the emulator based on the 294 remaining ensemble members, and predict all 6 held out members at the same time. As the training set is slightly smaller than each leave-one-out training set (299 members), and the emulator is expected to extrapolate further, we might expect a significant degradation in the performance of the emulator in prediction. As we see in fig. \ref{fig:holdout1_vs_loo}, there is little evidence of such a degradation. Both prediction error and estimated uncertainty are well within the bounds of that found during the leave-one-out validation exercise.
+Figure \ref{fig:holdout1_vs_loo_compact} shows the prediction of the 6 held-out ensemble members (red dots) in the context of the leave-one-out validation (black dots). In the held-out case, we fit the emulator based on the 294 remaining ensemble members, and predict all 6 held out members at the same time. As the training set is slightly smaller than each leave-one-out training set (299 members), and the emulator is expected to extrapolate further, we might expect a significant degradation in the performance of the emulator in prediction. As we see in fig. \ref{fig:holdout1_vs_loo_compact}, there is little evidence of such a degradation. Both prediction error and estimated uncertainty are well within the bounds of that found during the leave-one-out validation exercise.
 
 \begin{figure}[t]
 \includegraphics[width=12cm]{../graphics/holdout1_vs_loo_compact.pdf}
