@@ -23,9 +23,11 @@ library(viridisLite)
 load('famous_forest_fraction.RData')
 load('famous_agg.Rdata')
 
-# Load specific versions of a github repository
+# Load specific versions of a github repository for emulator tools ...
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/emtools.R')
+# ... implausibility and history matching tools ...
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/imptools.R')
+# ... and visualisation tools.
 source('https://raw.githubusercontent.com/dougmcneall/packages-git/5f79ffe749f25c6fc39f4f7925e1538d36b7caf1/vistools.R')
 
 # pallettes
@@ -77,7 +79,7 @@ dfunc.up <- function(x,y,...){
 
 dfunc.up.truth = function(x,y, ...){
   # function for plotting 2d kernel density estimates in pairs() plot,
-  # adding a data point overlay.
+  # adding a data point overlay in the last row of the input matrix.
   require(MASS)
   require(RColorBrewer)
   
@@ -125,7 +127,7 @@ reset <- function() {
   plot(0:1, 0:1, type="n", xlab="", ylab="", axes=FALSE)
 }
 
-
+# Input matrix (latin hypercube design)
 X = famous_agg[, 2:8]
 X.norm = normalize(X)
 X.stan.norm <- normalize(matrix(X.standard, nrow = 1), wrt = X)
@@ -242,7 +244,7 @@ if(run_diagnostics){
 
   
   
-  # Rank histograms for checking the uncertainty?
+  # Rank histograms for checking the uncertainty.
   # The principle behind the rank histogram is quite simple. 
   # Ideally, one property that is desired from an EF is reliable probabilities;
   # if ensemble relative frequency suggests P percent probability of occurrence,
@@ -419,6 +421,7 @@ dev.off()
 
 # Reviewer 1 would like to know how the one-at-a-time sensitivity analysis might
 # be affected by changing the prior form of the emulator.
+# Here, we see how the sensitivity analysis is affected by using a flat prior.
 
 ## build a matrix of OAT predictions
 oat.mean.mat.flat = matrix(nrow = n*length(amaz.x), ncol = length(xlist))
@@ -470,10 +473,9 @@ legend('top', legend = c('Amazon', 'SE Asia', 'C Africa'),
 
 dev.off()
 
-
-
+# This section removes implausible inputs from the one-at-a-time sensitivity analysis.
 # calculate the implausibility of the oat matrix for each of the three forests,
-# and remove those points with an implausibility over 3 
+# and remove those points with an implausibility over 3. 
 oat.impl.mat = matrix(nrow = n*length(amaz.x), ncol = length(xlist))
 
 for(i in 1:length(xlist)){
@@ -583,7 +585,8 @@ dev.off()
 
 
 
-# Reviewer 1 asks how the prior form of the emulator influences the sensitivity analyses
+# Again, how does the prior form of the emulator influences the sensitivity analyses?
+# Calculate the sensitivity indices with a flat prior.
 
 pred.fast.flat = predict(tropics.flat, newdata = X.fast$X, type = 'UK')
 fast.flat.tell <- tell(X.fast, pred.fast.flat$mean)
@@ -592,8 +595,6 @@ par(las = 2, mar = c(9,5,3,2))
 barplot(bp.convert(fast.flat.tell), col = c('orange', 'grey'), ylab = 'relative sensitivity')
 legend('topleft',legend = c('Main effect', 'Interactions'), fill = c('skyblue', 'grey') )
 dev.off()
-
-
 
 
 
@@ -624,44 +625,11 @@ hist(fast.impl.congo, xlim = xlim)
 dev.new()
 plot(X.fast$X[,'MOD_TEMP'], X.fast$X[,'MOD_PRECIP'])
 
-# Calculating the 'Shapley measures', which allows for non-independence
-# of the inputs
 
-# This doesn't give great results
-#shapMC = shapleySubsetMc(X=X_tropics,Y=Y_tropics,
-#  Ntot=NULL, Ni=3, cat=NULL, weight=NULL, discrete=NULL)
-
-#fast.firstorder = print(fast.tell)[,1]
-#fast.total = print(fast.tell)[,2]
-
-#dev.new()
-#plot(fast.firstorder, shapMC$shapley)
-
-
-#X.fast <- fast99(model = NULL, factors = colnames(X_tropics_norm), n = 1000,
-#                 q = "qunif", q.arg = list(min = 0, max = 1))
-
-#pred.fast = predict(tropics_fit, newdata = X.fast$X, type = 'UK')
-
-
-
-
-#shapleyPermRand(model = NULL, Xall, Xset, d, Nv, m, No = 1, Ni = 3, colnames = NULL, ...)
-
-     ## S3 method for class 'shapleyPermRand'
-
-#X.shapPR = shapleyPermRand(model = NULL, Xall, Xset, d, Nv, m, No = 1, Ni = 3, colnames = NULL, ...)
-
-#pred.shapPR = predict(tropics_fit, newdata = X.fast$X, type = 'UK')
-
-#tell(x, y = NULL, return.var = NULL, ...)
-
-
-
-# ------------------------------------------------------
-# Find the set of plausible inputs, when 
-# temperature and precip are included in the inputs
-# ------------------------------------------------------
+# -------------------------------------------------------------------------------------
+# Find the set of NROY (not ruled out yet) inputs, when 
+# temperature and precip are included in the inputs to the emulator.
+# -------------------------------------------------------------------------------------
 
 inputs.set <- function(X, y, thres, obs, obs.sd = 0, disc = 0, disc.sd = 0, n = 100000, abt = FALSE){ 
   # find a set of inputs that are consistent with a particular
@@ -802,8 +770,6 @@ dev.off()
 
 # Reviewer 1 would like to know how the flat-prior emulator
 # affects the two-at-a-time analysis.
-# Note, need to fix the colour scales here.
-
 
 # sample from the emulator
 y.taat.tp.flat = predict(tropics.flat, newdata = X.taat.tp, type = 'UK')
@@ -1325,7 +1291,6 @@ dev.off()
 
 
 # -------------------------------------------------------------------------------------
-# Response to reviewers section:
 # What is the uncertainty in the input space that is NROY with respect
 # to climates
 # NOTE! X.climate only varies across the climate parameters
@@ -1347,8 +1312,6 @@ cplot(X.climate[nroy.ix.climate.amaz, 8], X.climate[nroy.ix.climate.amaz, 9],
       main = 'Amazon',
       xlab = 'Normalised Temperature', ylab = 'Normalised precipitation',
       legend.title =  "Emulator sd")
-
-
 
 cplot(X.climate[nroy.ix.climate.seasia, 8], X.climate[nroy.ix.climate.seasia, 9],
       pred.climate$mean[nroy.ix.climate.seasia],
@@ -1381,10 +1344,7 @@ cplot(X.climate[nroy.ix.climate.congo, 8], X.climate[nroy.ix.climate.congo, 9],
       legend.title =  "Emulator sd")
 dev.off()
 
-
-
 # ---------------------------------------------------------------------------------
-# Response to reviewers
 # Monte carlo filtering for sensitivity analysis
 # ---------------------------------------------------------------------------------
 
@@ -1662,9 +1622,6 @@ text(0.5, 0.20, 'Error bars indicate \n \u00B1 2 standard deviations',
 dev.off()
 
 
-
-
-
 # Plot both the run-generated and emulated MCF sensitivity
 #dev.new(width = 8, height = 6)
 pdf(file = 'graphics/mcf_300_5000.pdf', width = 8, height = 6)
@@ -1720,9 +1677,6 @@ arrows(x0 = 1:length(mcf.em.amaz$mean)+0.2, y0 = mcf.congo - (2*mcf.em.congo.300
        x1 = 1:length(mcf.em.amaz$mean) +0.2, y1 = mcf.congo + (2*mcf.em.congo.300$sd),
        lty = 'dotted',
        col = col.congo, length=0.05, angle=90, code=3)
-
-
-
 
 axis(1, labels = colnames(X_tropics_norm), at = 1:9, las = 2)
 axis(2)
@@ -1803,7 +1757,6 @@ points(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.characte
 points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = as.character(1:9), font = 2)
 points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = as.character(1:9), font = 2)
 
-
 abline(0,1, lty = 'dashed')
 
 dev.off()
@@ -1836,7 +1789,6 @@ points(print(fast.tell)[,1], mcf.em.amaz$mean, col = col.amaz, pch = as.characte
 points(print(fast.tell)[,1], mcf.em.seasia$mean, col = col.seasia, pch = as.character(1:9), font = 2)
 points(print(fast.tell)[,1], mcf.em.congo$mean, col = col.congo, pch = as.character(1:9), font = 2)
 
-
 abline(0,1, lty = 'dashed')
 
 legend('topleft', pch = as.character(1:9), legend = colnames(X_tropics_norm), cex = 0.8, bty = 'n')
@@ -1846,115 +1798,7 @@ legend('top', lty = 'solid', legend = c('Amazon', 'SE Asia', 'C Africa'),
        col = c(col.amaz,col.seasia, col.congo)
        , cex = 0.8, bty = 'n')
 
-
 dev.off()
-
-
-
-# --------------------------------------------------------------
-# Analysis suggested by Michael Goldstein - 
-# What value does the model add over just using T and P to
-# fit the data?
-# (not in paper)
-# -------------------------------------------------------------
-
-if(run_diagnostics){
-  # Produce genuine LOO for all these, put them together and compare with 
-  # true.loo
-  fit.x.amaz = km(~., design = X.norm, response=famous_agg$AMAZ_MOD_FRAC)
-  fit.x.seasia = km(~., design = X.norm, response=famous_agg$SEASIA_MOD_FRAC)
-  fit.x.congo = km(~., design = X.norm, response=famous_agg$CONGO_MOD_FRAC)
-  
-  # This is much quicker than adding them all together!
-  true.loo.amaz = true.loo(X = X.norm, y = famous_agg$AMAZ_MOD_FRAC)
-  true.loo.seasia = true.loo(X = X.norm, y = famous_agg$SEASIA_MOD_FRAC)
-  true.loo.congo = true.loo(X = X.norm, y = famous_agg$CONGO_MOD_FRAC)
-  
-  true.loo.X.mean = c(true.loo.amaz$mean, true.loo.seasia$mean, true.loo.congo$mean)
-  true.loo.X.sd = c(true.loo.amaz$sd, true.loo.seasia$sd, true.loo.congo$sd)
-  
-  # Mean absolute error is about 0.06 or 6%
-  print(paste('Just X mean absolute cross validation error =', mean(abs(true.loo.X.mean - Y_tropics))))
-  
-  plot(Y_tropics, true.loo.X.mean)
-  pdf(width = 6, height = 6, file = 'graphics/true_loo_X.pdf' )
-  xlim = c(-0.05, 1.05)
-  ylim = c(-0.05, 1.05)
-  par(las =1)
-  plot(Y_tropics, true.loo.X.mean, pch = 20,
-       xlab = 'observation', ylab = 'prediction',
-       col = col.tropics,
-       xlim = xlim, 
-       ylim = ylim,
-       bty = 'n',
-       axes = FALSE,
-       xaxs = 'i', yaxs = 'i')
-  
-  segments(x0 = Y_tropics, y0 = true.loo.X.mean - (2*true.loo.X.sd),
-           x1 = Y_tropics, y1 = true.loo.X.mean +(2*true.loo.X.sd),
-           col = col.tropics)
-  axis(1, pos = 0, col = 'grey')
-  axis(2, pos = 0, col = 'grey')
-  abline(0,1, col = 'grey')
-  legend('top', legend = c('Amazon', 'Asia', 'Africa'),
-         pch = 20, col = c(col.amaz, col.seasia, col.congo),
-         bty = 'n')
-  dev.off()
-  
-  
-  # Mean absolute error is about 0.03 or 3%
-  print(paste('mean absolute cross validation error = ', mean(abs(true.loo.all$mean - Y_tropics))))
-  
-  # This is much quicker than adding them all together!
-  true.loo.tp.amaz = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$AMAZ_MOD_FRAC)
-  true.loo.tp.seasia = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$SEASIA_MOD_FRAC)
-  true.loo.tp.congo = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$CONGO_MOD_FRAC)
-  
-  true.loo.tp.mean = c(true.loo.tp.amaz$mean, true.loo.tp.seasia$mean, true.loo.tp.congo$mean)
-  true.loo.tp.sd = c(true.loo.tp.amaz$sd, true.loo.tp.seasia$sd, true.loo.tp.congo$sd)
-  true.loo.tp.err  = Y_tropics
-  
-  print(paste('mean absolute cross validation error = ', mean(abs(true.loo.tp.mean - Y_tropics))))
-  pdf(width = 6, height = 6, file = 'graphics/true_loo_tp.pdf' )
-  xlim = c(-0.05, 1.05)
-  ylim = c(-0.05, 1.05)
-  par(las =1)
-  plot(Y_tropics, true.loo.tp.mean, pch = 20,
-       xlab = 'observation', ylab = 'prediction',
-       col = col.tropics,
-       xlim = xlim, 
-       ylim = ylim,
-       bty = 'n',
-       axes = FALSE,
-       xaxs = 'i', yaxs = 'i')
-  
-  segments(x0 = Y_tropics, y0 = true.loo.X.mean - (2*true.loo.tp.sd),
-           x1 = Y_tropics, y1 = true.loo.X.mean +(2*true.loo.tp.sd),
-           col = col.tropics)
-  axis(1, pos = 0, col = 'grey')
-  axis(2, pos = 0, col = 'grey')
-  abline(0,1, col = 'grey')
-  legend('top', legend = c('Amazon', 'Asia', 'Africa'),
-         pch = 20, col = c(col.amaz, col.seasia, col.congo),
-         bty = 'n')
-  dev.off()
-  
-  
-  # fit using just temperature and precip
-  fit.tp  = km(~., design = X_tropics_norm[, 8:9], response=Y_tropics)
-  pred.tp = leaveOneOut.km(fit.tp, type="UK", trend.reestim=TRUE)
-  
-  plot(Y_tropics, pred.tp$mean )
-  fit.tp.resid = pred.tp$mean - Y_tropics
-  
-  # Have to split these out per-forest
-  fit.resid.amazon = km(~., design = X.norm, response=fit.tp.resid[1:100])
-  fit.resid.seasia = km(~., design = X.norm, response=fit.tp.resid[101:200])
-  fit.resid.congo = km(~., design = X.norm, response=fit.tp.resid[201:300])
-  
-  plot(fit.resid.congo)
-  
-}else{print('skipping diagnostics')}
 
 # ---------------------------------------------------------------------------
 # Plot maps of the tropical forests.
@@ -2069,7 +1913,7 @@ dev.off()
 
 
 # --------------------------------------------------------------------------------------
-# Validation section for response to reviewers
+# Enhanced validation section for response to reviewers
 # --------------------------------------------------------------------------------------
 
 # Find the ensemble members nearest the observed temperature and precipitation
@@ -2086,7 +1930,6 @@ X.train.holdout1 = X_tropics_norm[-holdout1.ix, ]
 
 y.test.holdout1 <- Y_tropics[holdout1.ix]
 y.train.holdout1 <- Y_tropics[-holdout1.ix]
-
 
 pch.tropics = c(rep(pch.amaz, 100), rep(pch.seasia, 100), rep(pch.congo, 100))
 
@@ -2155,7 +1998,6 @@ legend('bottomright',
 text(1,0.1, labels = 'Dashed lines are ensemble limits', col = 'darkgrey', cex = 0.8,
      pos = 4)
 dev.off()
-
 
 
 # Sort predictions by forest fraction magnitude for plotting
@@ -2229,8 +2071,6 @@ text(-0.05, 0.80, 'Error bars indicate \n \u00B1 2 standard deviations',
 
 dev.off()
 
-
-
 # Histogram of leave-one-out and holdout errors
 pdf(file = 'graphics/holdout1_error_hist.pdf', width = 6, height = 5)
 hist(true.loo.all$mean - Y_tropics, col = 'darkgrey',
@@ -2245,17 +2085,7 @@ rug(pred.holdout1$mean - y.test.holdout1, col = 'red', lwd = 2)
 dev.off()
 
 
-
-
-
-
-
-
-
-
 # Compare leave-one-out error against hold-out error for the 6 members.
-
-
 #dev.new(width= 7, height = 4)
 pdf(file = 'graphics/loo_v_holdout1_prediction_error.pdf', width = 7, height = 4)
 par( las = 1)
@@ -2299,13 +2129,10 @@ points(1:6, abs(err.holdout1), pch = 19, col = 'red')
 
 
 # Compare linear prior with flat prior for leave-on-out prediction
-
-leaveOneOut.km
- km(~., design = X.train.holdout1, response = y.train.holdout1)
+leaveOneOut.km = km(~., design = X.train.holdout1, response = y.train.holdout1)
 
 tropics.flat = km(~1, design = X_tropics_norm, response = Y_tropics)
 
-  
 flat.loo = leaveOneOut.km(tropics.flat, type = 'UK', trend.reestim=TRUE)
 fit.loo =  leaveOneOut.km(tropics_fit, type = 'UK', trend.reestim=TRUE)
 
@@ -2316,13 +2143,11 @@ flat.meanunc = mean(flat.loo$sd)
 fit.meanunc = mean(fit.loo$sd)
 
 
-
 # -------------------------------------------------------------------------
 # Reviewer 1 is concerned about the impact of a lack of samples in  
 # parts of temperature and precipitation space, and how that might impact
 # on sensitivity analysis and history matching conclusions
 # -------------------------------------------------------------------------
-
 
 # Code from here is just copied from elsewhere at the moment, needs adjusting
 # to apply to these data.
@@ -2507,10 +2332,6 @@ historymatch.oaat <- function(X, Y,
 # observations. Need the emulator from the combined data, but History matching
 # individual data streams.
 
-  
-
-
-
 normalize.na = function(X, wrt = NULL){ 
   
   f <- function(X){
@@ -2549,13 +2370,10 @@ X.stan.wrt.lhs = normalize(matrix(X.stan, nrow = 1), wrt = lhs.range)
 
 # Normalize BEFORE putting it in to the SA
 # Keep everything in relation to original design
-
-
 # Need to normalize the constraints too
 # Normalize everything compared to the initial data (dat.norm)
 mins.norm = normalize.na(matrix(mins.constr, nrow = 1), wrt = dat.norm)
 maxes.norm = normalize.na(matrix(maxes.constr, nrow = 1), wrt = dat.norm)
-
 
 Y.norm = normalize.na(dat.level0, wrt = dat.norm)
 
@@ -2567,11 +2385,7 @@ glob.const.oaat = constrained.oaat(X = X.level0,
   hold = X.stan.wrt.lhs
   )
 
-
-# It's not constraining at the moment: why not?
 # Its the corners that are ruled out!!
-
-
 n = 21
 # Here is the full sensitivity analysis
 
@@ -2609,7 +2423,6 @@ legend('top',
        horiz = TRUE)
 dev.off()
 
-
 linecols.ext = c('black', paired)
 ylim = c(0,1)
 pdf(file = 'graphics/global_constrained_oaat.pdf', width = 9, height = 9)
@@ -2645,3 +2458,118 @@ legend('top',
 
 dev.off()
 
+
+
+# -------------------------------------------------------------------------------
+# end of analysis
+# -------------------------------------------------------------------------------
+
+# Save an image of the session
+print(paste0("augmented_emulator_image_", format(Sys.time(), "%d-%b-%Y-%H-%M"), ".Rdata"))
+
+stop()
+
+# --------------------------------------------------------------
+# Analysis suggested by Michael Goldstein - 
+# What value does the model add over just using T and P to
+# fit the data?
+# (not in paper)
+# -------------------------------------------------------------
+
+if(run_diagnostics){
+  # Produce genuine LOO for all these, put them together and compare with 
+  # true.loo
+  fit.x.amaz = km(~., design = X.norm, response=famous_agg$AMAZ_MOD_FRAC)
+  fit.x.seasia = km(~., design = X.norm, response=famous_agg$SEASIA_MOD_FRAC)
+  fit.x.congo = km(~., design = X.norm, response=famous_agg$CONGO_MOD_FRAC)
+  
+  # This is much quicker than adding them all together!
+  true.loo.amaz = true.loo(X = X.norm, y = famous_agg$AMAZ_MOD_FRAC)
+  true.loo.seasia = true.loo(X = X.norm, y = famous_agg$SEASIA_MOD_FRAC)
+  true.loo.congo = true.loo(X = X.norm, y = famous_agg$CONGO_MOD_FRAC)
+  
+  true.loo.X.mean = c(true.loo.amaz$mean, true.loo.seasia$mean, true.loo.congo$mean)
+  true.loo.X.sd = c(true.loo.amaz$sd, true.loo.seasia$sd, true.loo.congo$sd)
+  
+  # Mean absolute error is about 0.06 or 6%
+  print(paste('Just X mean absolute cross validation error =', mean(abs(true.loo.X.mean - Y_tropics))))
+  
+  plot(Y_tropics, true.loo.X.mean)
+  pdf(width = 6, height = 6, file = 'graphics/true_loo_X.pdf' )
+  xlim = c(-0.05, 1.05)
+  ylim = c(-0.05, 1.05)
+  par(las =1)
+  plot(Y_tropics, true.loo.X.mean, pch = 20,
+       xlab = 'observation', ylab = 'prediction',
+       col = col.tropics,
+       xlim = xlim, 
+       ylim = ylim,
+       bty = 'n',
+       axes = FALSE,
+       xaxs = 'i', yaxs = 'i')
+  
+  segments(x0 = Y_tropics, y0 = true.loo.X.mean - (2*true.loo.X.sd),
+           x1 = Y_tropics, y1 = true.loo.X.mean +(2*true.loo.X.sd),
+           col = col.tropics)
+  axis(1, pos = 0, col = 'grey')
+  axis(2, pos = 0, col = 'grey')
+  abline(0,1, col = 'grey')
+  legend('top', legend = c('Amazon', 'Asia', 'Africa'),
+         pch = 20, col = c(col.amaz, col.seasia, col.congo),
+         bty = 'n')
+  dev.off()
+  
+  
+  # Mean absolute error is about 0.03 or 3%
+  print(paste('mean absolute cross validation error = ', mean(abs(true.loo.all$mean - Y_tropics))))
+  
+  # This is much quicker than adding them all together!
+  true.loo.tp.amaz = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$AMAZ_MOD_FRAC)
+  true.loo.tp.seasia = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$SEASIA_MOD_FRAC)
+  true.loo.tp.congo = true.loo(X = X_tropics_norm[1:100, 8:9], y = famous_agg$CONGO_MOD_FRAC)
+  
+  true.loo.tp.mean = c(true.loo.tp.amaz$mean, true.loo.tp.seasia$mean, true.loo.tp.congo$mean)
+  true.loo.tp.sd = c(true.loo.tp.amaz$sd, true.loo.tp.seasia$sd, true.loo.tp.congo$sd)
+  true.loo.tp.err  = Y_tropics
+  
+  print(paste('mean absolute cross validation error = ', mean(abs(true.loo.tp.mean - Y_tropics))))
+  pdf(width = 6, height = 6, file = 'graphics/true_loo_tp.pdf' )
+  xlim = c(-0.05, 1.05)
+  ylim = c(-0.05, 1.05)
+  par(las =1)
+  plot(Y_tropics, true.loo.tp.mean, pch = 20,
+       xlab = 'observation', ylab = 'prediction',
+       col = col.tropics,
+       xlim = xlim, 
+       ylim = ylim,
+       bty = 'n',
+       axes = FALSE,
+       xaxs = 'i', yaxs = 'i')
+  
+  segments(x0 = Y_tropics, y0 = true.loo.X.mean - (2*true.loo.tp.sd),
+           x1 = Y_tropics, y1 = true.loo.X.mean +(2*true.loo.tp.sd),
+           col = col.tropics)
+  axis(1, pos = 0, col = 'grey')
+  axis(2, pos = 0, col = 'grey')
+  abline(0,1, col = 'grey')
+  legend('top', legend = c('Amazon', 'Asia', 'Africa'),
+         pch = 20, col = c(col.amaz, col.seasia, col.congo),
+         bty = 'n')
+  dev.off()
+  
+  
+  # fit using just temperature and precip
+  fit.tp  = km(~., design = X_tropics_norm[, 8:9], response=Y_tropics)
+  pred.tp = leaveOneOut.km(fit.tp, type="UK", trend.reestim=TRUE)
+  
+  plot(Y_tropics, pred.tp$mean )
+  fit.tp.resid = pred.tp$mean - Y_tropics
+  
+  # Have to split these out per-forest
+  fit.resid.amazon = km(~., design = X.norm, response=fit.tp.resid[1:100])
+  fit.resid.seasia = km(~., design = X.norm, response=fit.tp.resid[101:200])
+  fit.resid.congo = km(~., design = X.norm, response=fit.tp.resid[201:300])
+  
+  plot(fit.resid.congo)
+  
+}else{print('skipping diagnostics')}
