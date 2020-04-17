@@ -193,7 +193,7 @@ Variation in the parameters across the ensemble had a strong impact on vegetatio
 
 %%f
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/tropics_maps_yg.pdf}
+\includegraphics[width=12cm]{../graphics/fig01.pdf}
 \caption{Broadleaf forest fraction in the FAMOUS ensemble, ranked from the smallest to largest global mean value.}
 \label{fig:tropics_maps_yg}
 \end{figure}
@@ -206,7 +206,7 @@ In this study, we use the same ensemble of forest fraction data used in M16. How
 For temperature observations we use the CRU global monthly surface temperature climatology \citep{jones1999face}, covering the years 1960-1990. For precipitation we use the average monthly rate of precipitation, covering the years from 1979-2001 from GPCP Version 2.2 provided by the NOAA/OAR/ESRL PSD, Boulder, Colorado, USA, from their Web site at https://www.esrl.noaa.gov/psd/ \citep{Adler2003}. Vegetation fraction observations are adapted from \cite{loveland2000landcover}, and are shown in fig. \ref{fig:map_comparison}. Although the observations all cover slightly different time periods, we expect the differences caused by harmonising the time periods to be very small compared to other uncertainties in our analysis, and to be well covered by our uncertainty estimates.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/map_comparison.pdf}
+\includegraphics[width=12cm]{../graphics/fig02.pdf}
 \caption{Observations of broadleaf forest fraction on their native grid (top), and regridded to the FAMOUS grid (bottom).}
 \label{fig:map_comparison}
 \end{figure}
@@ -216,7 +216,7 @@ A plot of regional mean temperature and precipitation in the tropical forest reg
 It appears that a wetter climate - which would be expected to stabilise forests - broadly compensates for the forest reductions induced by a warmer climate. Within the ensemble of Central African forests for example, forest fraction increases towards the ``cooler, wetter'' (top left) part of the climate phase space. Beyond a certain value however, there are no simulated climates or forests in this climatic region. It is clear from the plot that while central African and Southeast Asian forests are simulated in the large part considerably warmer than recent observations, they are also simulated considerably wetter, which might be expected to compensate forest stability. In contrast, while simulated considerably warmer, the Amazon is also slightly drier than recent observations, which might further reduce forest stability.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/fraction_vs_temp_precip_pcolcor.pdf}
+\includegraphics[width=12cm]{../graphics/fig03.pdf}
 \caption{Regional temperature, precipitation and broadleaf forest fraction in the ensemble of FAMOUS compared with observations. Smaller symbols represent broadleaf forest fraction in the FAMOUS ensemble against regional mean temperature and precipitation. Ensemble member forest fraction in the Amazon is represented by the colour of the circles, Central Africa by triangles and SE Asia by squares. Larger symbols represent observed climate and forest fraction.
 }
 \label{fig:fraction_vs_temp_precip_pcolcor}
@@ -232,7 +232,7 @@ The climate model FAMOUS is computationally expensive enough that we cannot run 
 Our strategy is to augment the design matrix of input parameters $X$ with corresponding atmospheric climate model output that might have an impact on the modelled land surface, building an emulator that models the effects of both input parameters and climate on forest fraction. We then use the augmented emulator to bias correct each forest in turn. We use the emulator to describe the relationship between land surface parameters, atmospheric variables that summarise the action of hidden atmospheric parameters, and the broadleaf forest fraction. The relationships between these variables are summarised in fig. \ref{fig:dag}. 
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/dag.pdf}
+\includegraphics[width=12cm]{../graphics/fig04.pdf}
 \caption{A graph showing the assumed relationship between input parameters, climate variables and forest fraction. An arrow indicates influence in the direction of the arrow. Processes that are directly emulated are shown with a solid arrow, while the processes shown by a dotted arrow are not directly emulated. 
 }
 \label{fig:dag}
@@ -252,7 +252,7 @@ X & C_{AS}
 From an initial ensemble design matrix with $n=100$ members and $p=7$ inputs, we now have a design with $n=300$ members and $p=9$ inputs. Each member with a replicated set of initial input parameters (e.g members $[1, 101, 201]$), differ only in the $T$ and $P$ values. Figure \ref{fig:augmented_emulator} shows a diagram of the augmented emulator along with the composition of the resulting input matrix and output vector.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/augmented_emulator.pdf}
+\includegraphics[width=12cm]{../graphics/fig05.pdf}
 \caption{In a standard emulator setup (left), training data consists of an input matrix $X$ and corresponding simulator output $y$. A new emulator $g_{1}(), \ldots,g_{3}()$ is trained for each output $y_{1}, \ldots, y_{3}$ of interest. In the augmented emulator, output from the simulator $C_{1}, \ldots, C_{3}$ augments the design matrix, with the initial inputs $X$ repeated.}
 \label{fig:augmented_emulator}
 \end{figure}
@@ -265,7 +265,7 @@ We note that the augmented emulator depends on the assumption that modelled broa
 To verify that the augmented emulator adequately reproduces the simulator behaviour, we use a leave-one-out metric. For this metric, we sequentially remove one simulator run from the ensemble, train the emulator on the remaining ensemble members and predict the held-out run. We present the predicted members and the calculated uncertainty plotted against the actual ensemble values in fig. \ref{fig:true_loo_all}.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/true_loo_all.pdf}
+\includegraphics[width=12cm]{../graphics/fig06.pdf}
 \caption{Leave-one-out cross validation plot, with the true value of the simulator output on the x-axis, and predicted output on the y-axis. Vertical lines indicate $\pm$2 standard deviations.
 }
 \label{fig:true_loo_all}
@@ -302,7 +302,7 @@ All                      & 0.06                              & 0.03             
 Do the error estimates of the augmented emulator match the true error distributions when tested in leave-one-out predictions? We test the reliability of uncertainty estimates of the emulator by checking that the estimated probability distributions for held-out ensemble members match the true error distributions in the leave-one-out exercise. We create a rank histogram (see e.g. \cite{hamill2001interpretation}) for predictions, sampling 1000 times from each Gaussian prediction distribution, and plotting the rank of the actual prediction in that distribution. The distribution of these ranks overall predictions should be uniform if the uncertainty estimates are reliable. Consistent overestimation of uncertainty will produce a peaked histogram, while systematic underestimation of uncertainty will produce a u-shaped histogram. The rank histogram produced by this set of predictions (fig. \ref{fig:rankhist}) is close to a uniform distribution, indicating reliable predictions.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/rankhist.pdf}
+\includegraphics[width=12cm]{../graphics/fig07.pdf}
 \caption{Rank histogram of leave-one-out predictions. For each prediction of a held-out ensemble member, we sample 1000 points from the Gaussian prediction distribution, and then record where the true held-out ensemble member ranks in that distribution. We plot a histogram of the ranks for all 300 ensemble members. A uniform distribution of ranks indicates that uncertainty estimates of the emulator are well calibrated.
 }
 \label{fig:rankhist}
@@ -340,7 +340,7 @@ which recognises that the distance between the best estimate of the emulator and
 What impact do temperature and precipitation have on forest fraction together? We use the emulator from section \ref{ssec:augmented} and predict the simulator output across the entire range of simulated temperature and precipitation, while holding the other inputs at their default values. The marginal impacts of temperature and precipitation on forest fraction are clear in fig. \ref{fig:taat_temp_precip_quilt}. Ensemble member temperature, precipitation and forest fraction, taken from fig. \ref{fig:fraction_vs_temp_precip_pcolcor} are overplotted for comparison. Temperature and precipitation values are normalised to the range of the ensemble in this plot.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/taat_temp_precip_quilt.pdf}
+\includegraphics[width=12cm]{../graphics/fig08.pdf}
 \caption{The impact of climate on forest fraction. Background plot colour indicates the mean emulated forest fraction when all land surface inputs are held at their default values. Temperature and precipitation in the ensemble are marked with symbols, with the fill colour representing forest fraction. Larger symbols represent the values observed in the real world.
 }
 \label{fig:taat_temp_precip_quilt}
@@ -356,7 +356,7 @@ The bias correction reduces the difference between the prediction for the modell
 
 
 \begin{figure}[t]
-\includegraphics[width=8.3cm]{../graphics/dotchart_fractions.pdf}
+\includegraphics[width=8.3cm]{../graphics/fig09.pdf}
 \caption{Observed and emulated Forest fraction in each tropical forest. For the emulated forest fraction at default and bias corrected parameters, emulator uncertainty of $\pm$ 2sd is represented by horizontal bars.
 }
 \label{fig:dotchart_fractions}
@@ -389,7 +389,7 @@ Central Africa          & -0.04  &         0.768        & -0.11    & 1.5       \
 Another result of bias correction is that it increases the ``harmonisation'' of the input spaces - that is, the volume of the input space that is ``shared'', or Not Ruled Out Yet by any of the comparisons of the simulated forest fractions with data. In M16, we argued that the regions of input parameter space where the model output best matched the observations had a large shared volume for the Central African, Southeast Asian and North American forests. In contrast, the ``best'' input parameters for the Amazon showed very little overlap with these other forests. This pointed to a systematic difference between the Amazon and the other forests that might be a climate bias, or a fundamental discrepancy in the land surface component of the model. Here, we show that the climate-bias-corrected forest in the Amazon would share a much larger proportion of its NROY space with the other forests. Indeed, the default parameters are now part of this ``shared'' space, and there is formally no need to invoke an unexplained model discrepancy in order to accept them for all the tropical forests. We show a cartoon of the situation in fig. \ref{fig:NROY_cartoon}.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/NROY_cartoon.pdf}
+\includegraphics[width=12cm]{../graphics/fig10.pdf}
 \caption{A cartoon depicting the input space that is ``not ruled out yet (NROY)'' when the climate simulator output is compared to observations of the forest fraction in the Amazon, Africa, and South East Asia before (left) and after (right) bias correction. We measure the ``shared'' space (the intersection of NROY spaces for each forest) as a fraction of the union (the total space covered by all three forests) of the NROY spaces. The ``initial'' space represents the total parameter space covered by the ensemble.
 }
 \label{fig:NROY_cartoon}
@@ -407,7 +407,7 @@ It is possible that the estimate of shared NROY input space is larger than it co
 
 
 \begin{figure}[t]
-\includegraphics[width=8.3cm]{../graphics/best_inputs_all_nobc.pdf}
+\includegraphics[width=8.3cm]{../graphics/fig11.pdf}
 \caption{NROY land surface input space shared by all three forests before bias correction. Blue shading denotes the density of NROY input candidates, projected into the two dimensional space indicated by the labels. The default parameter settings are marked as red points.
 }
 \label{fig:best_inputs_all_nobc}
@@ -415,7 +415,7 @@ It is possible that the estimate of shared NROY input space is larger than it co
 
 
 \begin{figure}[t]
-\includegraphics[width=8.3cm]{../graphics/best_inputs_all_bc.pdf}
+\includegraphics[width=8.3cm]{../graphics/fig12.pdf}
 \caption{NROY land surface input space shared by all three forests when bias corrected using the augmented emulator. Blue shading denotes the density of NROY input candidates, projected into the two dimensional space indicated by the labels. The default parameter settings are marked as red points.
 }
 \label{fig:best_inputs_all_bc}
@@ -468,7 +468,7 @@ Central Africa         &    0.915 & 0.337  &   1 \\
 The augmented emulator allows us to measure the sensitivity of forest fraction to the land surface input parameters simultaneously with climate variables temperature and precipitation. A quantitative measure of sensitivity of the model output to parameters that does take into account interactions with other parameters is found using the FAST99 algorithm of \cite{saltelli1999sensitivity}, summarised in fig. \ref{fig:fast_barplot}. Precipitation and Temperature are the second and third most important parameters, more important than NL0, and only slightly less important than V\_CRIT\_ALPHA. Interaction terms contribute a small but non-negligible part to the sensitivity. This form of quantitative sensitivity analysis is useful to understand initial model behaviour, but could be vulnerable to error, as it is assumed that all parts of the input space are valid. Our experiment design does not control temperature and precipitation directly, and the ``cool, wet'' part of this parameter space does not contain tropical broadleaf forest. It is possible therefore that a sensitvity analysis that relies on input samples from this region might mis-specify sensitivity indices. Below, we outline two methods that tackle this problem: One-at-a-time sensitivity analysis with history matching, and Monte Carlo filtering.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/fast_barplot.pdf}
+\includegraphics[width=12cm]{../graphics/fig13.pdf}
 \caption{Sensitivity of forest fraction to model parameters and climate parameters, found using the FAST99 algorithm of \cite{saltelli1999sensitivity}.
 }
 \label{fig:fast_barplot}
@@ -480,7 +480,7 @@ We measure the one-at-a-time sensitivity to parameters and climate variables, us
  Parameters NL0 and V\_CRIT\_ALPHA and climate variables temperature and precipitation exert strong influences of similar magnitudes on forest fraction. Shaded regions represent the uncertainty of the sensitivity to each parameter, due to estimated emulator uncertainty of $\pm$ 2 standard deviations. This sensitivity measure does not include the extra uncertainty due to the fact that the relationships will change depending on the position of the other parameters. We do however see a measure of how temperature and precipitation affect the marginal response of the other parameters, as the observed climates of each forest are different. For example, we clearly see that the response of the forest fraction to e.g. NL0 depends on climate - the forest fraction response is a noticeably different shape when varied under the mean climate of the South East Asian region.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/sensitivity_TP_no_NROY.pdf}
+\includegraphics[width=12cm]{../graphics/fig14.pdf}
 \caption{One-at-a-time sensitivity of forest fraction variation of each parameter and climate variable in turn across the ``Not Ruled Out Yet'' parameter range. All other parameters or variables are held at their default values while each parameter is varied, and values of model broadleaf forest fraction which are statistically far from observations are excluded. Solid lines represent the emulator mean and shaded areas represent $\pm$ 2 standard deviations of emulator uncertainty.
 }
 \label{fig:sensitivity_TP_no_NROY}
@@ -493,7 +493,7 @@ We integrate the MCF sensitivity analysis into the history matching framework. W
 We apply MCF using the emulator. This allows us to examine the difference between model output distributions given a much larger sample from the input space than when using only the ensemble. This comes at the cost of using an imperfect emulator, which may give different results than if we were using a large ensemble of runs. To avoid the problem of sampling precipitation and temperature from regions where there are no ensemble members, we sample uniformly from across input space for all other parameters, and then append a random temperature/precipitation location from the ensemble. We calculate a sampling uncertainty by calculating the MCF sensitivity metrics 1000 times, each time using a sample size of 5000 emulated ensemble members. In this way, we estimate both the mean and the uncertainty (standard deviation) of the MCF sensitivity measures. We note that the sensitivity indices are calculated higher when a small number of ensemble members are used, as well as with a higher uncertainty. The change in both the estimated statistic and its uncertainty have begun to become small by the time 3000 ensemble members are used, suggesting that we should use at least this many emulated ensemble members to obtain an unbiased sensitivity analysis (see supplementary material). We compare the KS statistics and their associated uncertainty for each input in fig. \ref{fig:mcf}. 
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/mcf.pdf}
+\includegraphics[width=12cm]{../graphics/fig15.pdf}
 \caption{Monte Carlo filtering estimate of the sensitivity of model output to inputs, using 5000 emulated members. Error bars represent $\pm$ 2 standard deviations of uncertainty in the statistic, calculated by repeating the calculation 1000 times.
 }
 \label{fig:mcf}
@@ -506,7 +506,7 @@ We can use the emulator to find locations in parameter space where there is a po
 
 
 \begin{figure}[t]
-\includegraphics[width=8.3cm]{../graphics/smaller_error_bc_default.pdf}
+\includegraphics[width=8.3cm]{../graphics/fig16.pdf}
 \caption{Two dimensional projections of the density of inputs where the corresponding bias corrected emulated forests have a smaller error than the bias corrected default parameters. These regions might be good targets for additional runs of the climate model. Default parameters are shown as a red point.
 }
 \label{fig:smaller_error_bc_default}
@@ -517,7 +517,7 @@ We can use the emulator to find locations in parameter space where there is a po
 We use history matching to find the set of regional mean climates that are most consistent with the observations for each tropical forest. To illustrate the best case scenario we set model discrepancy, its associated uncertainty, and observational uncertainty artificially low (0, 0.01 and 0 respectively), so that implausibility is almost exclusively a product of the emulator uncertainty. We find the set of NROY temperature and precipitation values when the remaining input parameters are held at their default values. Figure \ref{fig:nroy_climate} shows the density of NROY points in the climate space for each of the observed forest fractions. We see that the Amazon and Central African forests might be well simulated in the model in a very wide range of cooler and wetter climates, with only the ``hot, dry'' corner showing zero density of potential inputs that produce similar forest fraction to observations. The Southeast Asian forest fraction is matched by a swathe of inputs running diagonally through the centre of input space. Neither the hot-dry or cool-wet corners of input space produce forests that match the observations, though the warm-wet and cool-dry corners do.
 
 \begin{figure}[t]
-\includegraphics[width=8.3cm]{../graphics/nroy_climate.pdf}
+\includegraphics[width=8.3cm]{../graphics/fig17.pdf}
 \caption{Density of not-ruled-out yet emulated temperature and precipitation pairs for each observed tropical forest fraction, when input parameters are held at their default values. Observed climates for each forest are marked in red. 
 }
 \label{fig:nroy_climate}

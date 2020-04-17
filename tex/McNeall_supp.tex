@@ -39,7 +39,7 @@ In order to test ewe hold out 6 ensemble members in the region of and nearest to
 
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/holdout1_location.pdf}
+\includegraphics[width=12cm]{../graphics/figS01.pdf}
 \caption{Location of held-out ensemble members in temperature and precipitation space.}
 \label{fig:holdout1_location}
 \end{figure}
@@ -48,7 +48,7 @@ In order to test ewe hold out 6 ensemble members in the region of and nearest to
 Figure \ref{fig:holdout1_vs_loo_compact} shows the prediction of the 6 held-out ensemble members (red dots) in the context of the leave-one-out validation (black dots). In the held-out case, we fit the emulator based on the 294 remaining ensemble members, and predict all 6 held out members at the same time. As the training set is slightly smaller than each leave-one-out training set (299 members), and the emulator is expected to extrapolate further, we might expect a significant degradation in the performance of the emulator in prediction. As we see in fig. \ref{fig:holdout1_vs_loo_compact}, there is little evidence of such a degradation. Both prediction error and estimated uncertainty are well within the bounds of that found during the leave-one-out validation exercise.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/holdout1_vs_loo_compact.pdf}
+\includegraphics[width=12cm]{../graphics/figS02.pdf}
 \caption{Predictions of forest fraction ensemble members in a leave-one-out validation exercise (grey dots) and for the 6 held-out ensemble members (red dots).}
 \label{fig:holdout1_vs_loo_compact}
 \end{figure}
@@ -56,7 +56,7 @@ Figure \ref{fig:holdout1_vs_loo_compact} shows the prediction of the 6 held-out 
 Figure \ref{fig:holdout1_error_hist} shows the prediction error for the 6 members, in the context of the histogram of errors from the leave-one-out exercise. None of the errors are near the limits of the distribution, even though they might be expected to be larger, with a smaller training set and deeper extrapolation.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/holdout1_error_hist.pdf}
+\includegraphics[width=12cm]{../graphics/figS03.pdf}
 \caption{Emulator prediction error in the leave-one out validation exercise (grey histogram), with 6 held-out ensemble members.}
 \label{fig:holdout1_error_hist}
 \end{figure}
@@ -65,7 +65,7 @@ Figure \ref{fig:holdout1_error_hist} shows the prediction error for the 6 member
 When making a direct comparison of prediction of the 6 held-out members (fig. \ref{fig:loo_v_holdout1_prediction_error}), we see that there is some small degradation in the performance of the emulator - predictions tend to be slightly further from the held-out ensemble member, and uncertainty bounds wider. However, it should be noted that the error of the held-out samples is 1) only slightly larger than in the leave-one-out case, 2) small when compared to the range of the ensemble, and 3) prediction uncertainty intervals are certainly appropriate and do not increase dramatically. There seems to be no question that even when asked to predict ensemble members that are near the edge of parameter space, and are a significant extrapolation, the emulator performs well. Obviously, this shouldn’t be taken as meaning that there is no risk of the emulator performing poorly when extrapolating to the regions of the Amazon and Central African temperature and precipitation. However, we hope we have shown that there is little evidence to suggest that the emulator will perform poorly there. 
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/loo_v_holdout1_prediction_error.pdf}
+\includegraphics[width=12cm]{../graphics/figS04.pdf}
 \caption{Direct comparison of prediction of the held-out ensemble members in both the leave-one-out (LOO, blue points) and held-out (red points) validation exercises.}
 \label{fig:loo_v_holdout1_prediction_error}
 \end{figure}
@@ -76,7 +76,7 @@ We test the importance of the prior form of the emulator may be important in ext
 
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/loo_v_holdout_flat_prediction_error.pdf}
+\includegraphics[width=12cm]{../graphics/figS05.pdf}
 \caption{Comparison of emulators for prediction of held-out ensemble members. Black points are the held-out ensemble members, with grey points representing the standard (linear model prior) emulator, and vertical lines $\pm$ 2 standard deviations. Orange points represent prediction with a ``constant'' or ``flat'' prior, from which the Gaussian process models deviates.}
 \label{fig:loo_v_holdout_flat_prediction_error}
 \end{figure}
@@ -87,7 +87,7 @@ We test the importance of the prior form of the emulator may be important in ext
 We investigate the impact of sample size on the Monte Carlo Filtering (MCF) estimates of parameter uncertainty and their uncertainty. We calculate a sampling uncertainty by calculating the MCF sensitivity metrics 1000 times, each time using a sample size of between 100 and 3000 emulated points from the input space. In this way, we estimate both the mean and the uncertainty (standard deviation) of that mean, when using a different number of ensemble members to calculate the MCF sensitivity indices, including that for 300 members, our ensemble size. We plot these in fig. \ref{fig:mcf_mean_sd_vs_n}.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/mcf_mean_sd_vs_n.pdf}
+\includegraphics[width=12cm]{../graphics/figS06.pdf}
 \caption{ Mean (left) and standard deviation (right) of the KS statistic the Monte Carlo Filtering index of sensitivity, estimated using different sizes of emulated ensembles.}
 \label{fig:mcf_mean_sd_vs_n}
 \end{figure}
@@ -97,7 +97,7 @@ We note that the sensitivity indices are estimated higher when a small number of
 We examine the relationship between the MCF sensitivity measures and the FAST99 sensitivity measures, to see if the latter might overestimate the sensitivity of forest fraction to temperature and precipitation, due to sampling a corner of input space with no tropical forest. We plot only the FAST99 first-order sensitivity, as we do not expect MCF sensitivity to be able to measure interactions between inputs accurately. We find a fairly strong relationship between the two sensitivity measures, although we would expect some differences, as they are measuring different things, and MCF is not sampling from locations in temperature and precipitation space where there are no ensemble members. The FAST99 algorithm produces very similar sensitivity indices (perhaps fortuitously, as they measure on a different scale) for temperature and precipitation as the MCF algorithm for the Amazon forest, but the Southeast Asian and Central African forests appear less sensitive to these inputs when estimated using the MCF algorithm.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/fast99_vs_mcf2.pdf}
+\includegraphics[width=12cm]{../graphics/figS07.pdf}
 \caption{Relationship between the first-order sensitivity of input parameters calculated by the FAST99 algorithm, and that calculated by the Monte Carlo Filtering (MCF) algorithm. The sensitivity indices calculated only using the ensemble members are plotted on the left, with uncertainty estimated by using an emulated 300 member ensemble. On the right, we plot the sensitivity indices and associated uncertainty when calculated using 5000 emulated ensemble members.}
 \label{fig:fast99_vs_mcf2}
 \end{figure}
@@ -131,7 +131,7 @@ V\_CRIT\_ALPHA  & 0.5 &  & Control of photosynthesis with soil moisture. \\
 Forest fraction data is taken by calculating the mean broadleaf forest fraction in the areas shown in figure \ref{fig:map_forests}. Mean temperature and precipitation from the model are calculated for the corresponding regions and time period. The regions are: Amazon 15\textdegree S - 15\textdegree N, 270\textdegree E - 315\textdegree E; Central Africa; 15\textdegree S - 10\textdegree N, 7.5\textdegree E - 30\textdegree E; SE Asia 12\textdegree S - 10\textdegree N, 90\textdegree E - 150\textdegree E.
 
 \begin{figure}[t]
-\includegraphics[width=12cm]{../graphics/map_forests_augmented.pdf}
+\includegraphics[width=12cm]{../graphics/figS08.pdf}
 \caption{A map of the forest regions used in the study. }
 \label{fig:map_forests}
 \end{figure}
