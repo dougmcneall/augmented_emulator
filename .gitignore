@@ -1,9 +1,6 @@
 # .gitignore for augmented_emulator
 
 
-# graphics files
-*.png
-
 
 #run data
 augmented_emulator_image*
